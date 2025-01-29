@@ -1,33 +1,50 @@
 import requests
 from flask import Flask, request, jsonify
-import asyncio
-import websockets
 import json
 from flask_cors import CORS
 
-
-
 app = Flask(__name__)
-
 CORS(app)  # Allows Netlify & Twitch Panel to access API
-
-BOT_SERVER_URL = "http://localhost:6000/bits_event"
 
 @app.route('/bits', methods=['POST'])
 def handle_bits():
+    """Handles Bits transactions from the Twitch Extension."""
+    
     data = request.json
     bits_used = data.get("bits_used", 0)
     user = data.get("user_name", "Unknown")
 
-    print(f"{user} spent {bits_used} Bits!")
+    print(f"💰 {user} spent {bits_used} Bits!")
 
-    # Send event to bot API
-    response = requests.post(BOT_SERVER_URL, json={
-        "bits_used": bits_used,
-        "user_name": user
-    })
+    # Example: Process Bits transaction
+    process_bits_event(user, bits_used)
 
-    return jsonify(response.json())
+    return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
+
+def process_bits_event(user, bits):
+    """Processes the Bits event (e.g., logs it, updates a database, triggers OBS)."""
+
+    # Log the event
+    print(f"🎉 Processing {bits} Bits from {user}")
+
+    # (Optional) Add Database Logging Here
+    # save_to_database(user, bits)
+
+    # (Optional) Trigger OBS Overlays or Alerts
+    # trigger_obs_overlay(bits, user)
+
+    # (Optional) Send a Webhook or Discord Alert
+    # send_discord_alert(f"{user} just spent {bits} Bits!")
+
+    # (Optional) Display Custom Graphics
+    if bits == 100:
+        print("🔥 FIRE MODE ACTIVATED!")
+    elif bits == 500:
+        print("🎶 SOUND EFFECT TRIGGERED!")
+    elif bits == 1000:
+        print("⚡ ULTRA HYPE MODE!")
+    
+    return True
 
 if __name__ == "__main__":
     import os
