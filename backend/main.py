@@ -89,14 +89,17 @@ class Bot(commands.Bot):
     async def event_ready(self):
         logger.info(f'Logged in as | {self.nick}')
         logger.info(f'Connected to channel | {os.getenv("TWITCH_CHANNEL")}')
-        
+    
+        channel = self.get_channel(os.getenv('TWITCH_CHANNEL'))
+        await channel.send("G'day legends! 🦘 Your friendly neighborhood bot is here, ready to throw some shrimps on the barbie and watch out for drop bears! Let's have a ripper of a stream!")
+    
         channel_id = os.getenv('CHANNEL_ID')
         token = os.getenv('TWITCH_TOKEN')
-        
+    
         if not all([channel_id, token]):
             logger.error("Missing required environment variables")
             return
-        
+    
         try:
             # Create a single topic without list wrapping
             topic = pubsub.channel_points(token)[int(channel_id)]
@@ -104,7 +107,6 @@ class Bot(commands.Bot):
             logger.info("Successfully subscribed to channel points events")
         except Exception as e:
             logger.error(f"PubSub connection details: {str(e)}", exc_info=True)
-
     def get_user_stats(self, username):
         """Get or create user stats"""
         if 'aussie_ranks' not in self.viewer_data:

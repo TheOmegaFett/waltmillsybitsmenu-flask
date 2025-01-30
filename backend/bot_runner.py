@@ -37,14 +37,23 @@ async def main():
     bot = Bot()
     bot.loop = loop
     
-    redis_url = os.environ.get('REDIS_URL')
-    logger.debug(f"Using Redis URL: {redis_url}")
-    redis_client = redis.from_url(redis_url)
+    # Start the bot first
+    bot_task = bot.start()
     
-    await asyncio.gather(
-        bot.start(),
-        listen_for_bits(bot, redis_client)
-    )
+    # Try Redis connection separately
+    try:
+        redis_url = os.environ.get('REDIS_URL')
+        if redis_url:
+            redis_client = redis.from_url(redis_url)
+            bits_task = listen_for_bits(bot, redis_client)
+            await asyncio.gather(bot_task, bits_task)
+        else:
+            logger.warning("No Redis URL found - running bot without bits integration")
+            await bot_task
+    except Exception as e:
+        logger.error(f"Redis error: {e}")
+        # Keep bot running even if Redis fails
+        await bot_task
 
 if __name__ == "__main__":
     asyncio.run(main())
