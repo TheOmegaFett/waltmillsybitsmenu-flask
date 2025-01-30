@@ -67,24 +67,6 @@ class Bot(commands.Bot):
         with open('viewer_data.json', 'w') as f:
             json.dump(self.viewer_data, f)
 
-
-    # async def event_raw_pubsub(self, data):
-    #     """Handle channel point redemptions"""
-    #     try:
-    #         if data['type'] == 'MESSAGE':
-    #             message_data = json.loads(data['data']['message'])
-    #             if message_data['type'] == 'reward-redeemed':
-    #                 redemption = message_data['data']['redemption']
-    #                 user = redemption['user']['display_name']
-    #                 reward = redemption['reward']
-    #                 title = reward['title']
-    #                 cost = reward['cost']
-                
-    #                 print(f"{user} redeemed {title}! for {cost} points!")
-    #                 await self.channel.send(f"{user} redeemed {title}! for {cost} points!")
-    #     except Exception as e:
-    #         print(f"Error processing pubsub message: {e}")
-                
         # Remove all other event_ready methods and keep only this one
     async def event_ready(self):
         logger.info(f'Logged in as | {self.nick}')
