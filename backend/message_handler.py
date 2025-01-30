@@ -1,7 +1,9 @@
 import redis
 import json
+import os
 
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+redis_url = os.environ.get('REDIS_URL')
+redis_client = redis.from_url(redis_url)
 
 def send_command(command_type, data):
     message = {
