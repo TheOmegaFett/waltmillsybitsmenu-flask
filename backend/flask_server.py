@@ -61,7 +61,9 @@ def process_bits_event(user, bits):
         print("⚡ ULTRA HYPE MODE!")
     
     return True
+
 if __name__ == "__main__":
-    import os
+    import eventlet
+    eventlet.monkey_patch()
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port, debug=True)
+    socketio.run(app, host="0.0.0.0", port=port)

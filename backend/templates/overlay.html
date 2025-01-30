@@ -30,17 +30,20 @@
 
     <script>
       const socket = io({
-        transports: ["websocket"],
-        timeout: 10000,
-        reconnection: true,
-        reconnectionAttempts: 5,
+        path: "/socket.io",
+        transports: ["polling", "websocket"],
+        upgrade: true,
+        rememberUpgrade: true,
+        secure: true,
+        rejectUnauthorized: false,
       });
       const fireGif = document.getElementById("fire-gif");
       const status = document.getElementById("status");
 
+      // Connection status handlers
       socket.on("connect", () => {
         status.textContent = "Connected to server!";
-        console.log("WebSocket Connected!");
+        console.log("Connection established!");
       });
 
       socket.on("show_fire_gif", (data) => {
@@ -53,12 +56,6 @@
             status.textContent = "Waiting for bits...";
           }, 5000);
         }
-      });
-
-      // Add connection error handling
-      socket.on("connect_error", (error) => {
-        status.textContent = "Connection error!";
-        console.log("Connection Error:", error);
       });
     </script>
   </body>
