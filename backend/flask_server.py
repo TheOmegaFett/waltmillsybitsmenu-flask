@@ -39,12 +39,16 @@ def handle_bits():
     return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
 
 if __name__ == "__main__":
-    # Start bot in background thread
+    # Create new event loop for the bot thread
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    # Start bot in background thread with the event loop
     from threading import Thread
-    bot_thread = Thread(target=run_bot)
+    bot_thread = Thread(target=lambda: loop.run_until_complete(start_bot()))
     bot_thread.daemon = True
     bot_thread.start()
     
     # Start Flask server
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port)
+    socketio.run(app, host="0.0.0.0", port=port)    
