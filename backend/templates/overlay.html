@@ -29,33 +29,21 @@
     />
 
     <script>
-      const socket = io({
+      const socket = io("/", {
         transports: ["polling"],
-        path: "/socket.io",
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5,
       });
 
       const fireGif = document.getElementById("fire-gif");
       const status = document.getElementById("status");
 
-      socket.on("connect", () => {
-        status.textContent = "Connected to server!";
-        console.log("Connection established!");
-      });
-
       socket.on("show_fire_gif", (data) => {
         status.textContent = "GIF triggered!";
         console.log("Received fire gif event!", data);
-        if (data.show) {
-          fireGif.style.display = "block";
-          setTimeout(() => {
-            fireGif.style.display = "none";
-            status.textContent = "Waiting for bits...";
-          }, 5000);
-        }
+        fireGif.style.display = "block";
+        setTimeout(() => {
+          fireGif.style.display = "none";
+          status.textContent = "Waiting for bits...";
+        }, 5000);
       });
     </script>
   </body>
