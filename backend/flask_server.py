@@ -29,7 +29,11 @@ def handle_bits():
     bits_used = data.get("bits_used", 0)
     user = data.get("user_name", "Unknown")
     
-    socketio.emit('show_fire_gif', {'show': True})
+    if bits_used == 1:
+        socketio.emit('show_fire_gif', {'show': True})
+    elif bits_used == 50:
+        socketio.emit('show_dropbear_gif', {'show': True})
+    
     return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
 
 if __name__ == "__main__":
