@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stream Overlay</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+      }
+      #fire-gif {
+        display: none;
+        width: 100%;
+        max-width: 500px;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  </head>
+  <body>
+    <img
+      id="fire-gif"
+      src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif"
+    />
+
+    <script>
+      const socket = io();
+      const fireGif = document.getElementById("fire-gif");
+
+      socket.on("show_fire_gif", (data) => {
+        if (data.show) {
+          fireGif.style.display = "block";
+          setTimeout(() => {
+            fireGif.style.display = "none";
+          }, 5000); // Hide after 5 seconds
+        }
+      });
+    </script>
+  </body>
+</html>
