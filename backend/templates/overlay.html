@@ -29,7 +29,12 @@
     />
 
     <script>
-      const socket = io();
+      const socket = io({
+        transports: ["websocket"],
+        timeout: 10000,
+        reconnection: true,
+        reconnectionAttempts: 5,
+      });
       const fireGif = document.getElementById("fire-gif");
       const status = document.getElementById("status");
 

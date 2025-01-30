@@ -13,7 +13,12 @@ def overlay():
     return render_template('overlay.html', show_gif=False)
 
 # Add WebSocket support for real-time updates
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, 
+    cors_allowed_origins="*",
+    async_mode='gevent',
+    ping_timeout=10,
+    ping_interval=5
+)
 
 @socketio.on('connect')
 def handle_connect():
