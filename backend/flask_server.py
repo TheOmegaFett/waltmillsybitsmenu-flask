@@ -33,6 +33,8 @@ def handle_bits():
         socketio.emit('show_fire_gif', {'show': True})
     elif bits_used == 50:
         socketio.emit('show_dropbear_gif', {'show': True})
+        # Trigger the bot's dropbear event
+        asyncio.run_coroutine_threadsafe(bot.dropbear(user), bot.loop)
     
     return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
 
