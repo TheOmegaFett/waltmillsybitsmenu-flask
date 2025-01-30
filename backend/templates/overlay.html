@@ -14,12 +14,11 @@
         max-width: 500px;
       }
       #status {
-        color: white;
+        color: lightgreen;
         font-family: Arial;
         padding: 10px;
       }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
   </head>
   <body>
     <div id="status">Waiting for bits...</div>
@@ -29,22 +28,33 @@
     />
 
     <script>
-      const socket = io("/", {
-        transports: ["polling"],
-      });
-
+      const ws = new WebSocket(
+        "wss://waltmillsybitsmenu-flask.onrender.com/ws"
+      );
       const fireGif = document.getElementById("fire-gif");
       const status = document.getElementById("status");
 
-      socket.on("show_fire_gif", (data) => {
-        status.textContent = "GIF triggered!";
-        console.log("Received fire gif event!", data);
-        fireGif.style.display = "block";
+      ws.onmessage = (event) => {
+        if (event.data === "show_fire") {
+          status.textContent = "GIF triggered!";
+          fireGif.style.display = "block";
+          setTimeout(() => {
+            fireGif.style.display = "none";
+            status.textContent = "Waiting for bits...";
+          }, 5000);
+        }
+      };
+
+      ws.onopen = () => {
+        status.textContent = "Connected to server!";
+      };
+
+      ws.onclose = () => {
+        status.textContent = "Disconnected - reconnecting...";
         setTimeout(() => {
-          fireGif.style.display = "none";
-          status.textContent = "Waiting for bits...";
+          window.location.reload();
         }, 5000);
-      });
+      };
     </script>
   </body>
 </html>
