@@ -1,9 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
-import eventlet
-
-eventlet.monkey_patch()
 
 app = Flask(__name__)
 CORS(app)
@@ -11,12 +8,9 @@ CORS(app)
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode='eventlet',
+    async_mode='threading',
     logger=True,
-    engineio_logger=True,
-    ping_timeout=60,
-    ping_interval=25,
-    transports=['polling', 'websocket']
+    engineio_logger=True
 )
 
 # Add new route for the OBS browser source
@@ -24,7 +18,10 @@ socketio = SocketIO(
 def overlay():
     return render_template('overlay.html', show_gif=False)
 
-@socketio.on('connect')
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host="0.0.0.0", port=port)@socketio.on('connect')
 def handle_connect():
     print("Client connected to WebSocket!")
 
