@@ -26,7 +26,7 @@ def process_bits_event(user, bits):
         print("🔥 FIRE MODE ACTIVATED!")
         print("Emitting fire_gif event...")
         socketio.emit('show_fire_gif', {'show': True}, broadcast=True)
-return True
+    return True
 
 @app.route('/bits', methods=['POST'])
 def handle_bits():
