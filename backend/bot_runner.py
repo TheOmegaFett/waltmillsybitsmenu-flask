@@ -1,10 +1,12 @@
 import redis
 import json
 import asyncio
+import os
 from main import Bot
 
 async def listen_for_commands(bot):
-    redis_client = redis.Redis(host='localhost', port=6379, db=0)
+    redis_url = os.getenv('REDIS_URL')
+    redis_client = redis.from_url(redis_url)
     pubsub = redis_client.pubsub()
     pubsub.subscribe('bot_commands')
     
