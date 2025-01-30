@@ -21,18 +21,17 @@ def handle_bits():
     bits_used = data.get("bits_used", 0)
     user = data.get("user_name", "Unknown")
     
-    print(f"💰 Bits Request: {user} attempting to spend {bits_used} Bits!")
-    print(f"Full request data: {data}")  # See all incoming data
+    print(f"💰 {user} spent {bits_used} Bits!")
 
     if bits_used == 1:
-        print("🔥 Triggering fire gif")
         socketio.emit('show_fire_gif', {'show': True})
+        return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
     elif bits_used == 50:
-        print("🐨 Triggering dropbear gif and command")
         socketio.emit('show_dropbear_gif', {'show': True})
         send_command('dropbear', {'user': user})
+        return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
 
-    return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
+    return jsonify({"status": "error", "message": "Invalid bits amount"})
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port)
