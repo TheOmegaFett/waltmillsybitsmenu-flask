@@ -1,12 +1,12 @@
+import eventlet
+eventlet.monkey_patch()
+
 import os
 import asyncio
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
-import eventlet
-from main import Bot, start_bot  # Import your Bot class
-
-eventlet.monkey_patch()
+from main import Bot, start_bot
 
 app = Flask(__name__)
 CORS(app)
