@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: flask-server
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && gunicorn --worker-class eventlet -w 1 flask_server:app
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bot-redis
+          property: connectionString
+
+  - type: worker
+    name: bot-worker
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python backend/bot_runner.py
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bot-redis
+          property: connectionString
+
+  - type: redis
+    name: bot-redis
+    ipAllowList: []
