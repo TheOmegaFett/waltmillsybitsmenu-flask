@@ -1,24 +1,28 @@
-import requests
 from flask import Flask, render_template, request, jsonify
-import json
 from flask_cors import CORS
 from flask_socketio import SocketIO
+import eventlet
+
+eventlet.monkey_patch()
 
 app = Flask(__name__)
-CORS(app)  # Allows Netlify & Twitch Panel to access API
+CORS(app)
+
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    async_mode='eventlet',
+    logger=True,
+    engineio_logger=True,
+    ping_timeout=60,
+    ping_interval=25,
+    transports=['polling', 'websocket']
+)
 
 # Add new route for the OBS browser source
 @app.route('/overlay')
 def overlay():
     return render_template('overlay.html', show_gif=False)
-
-# Add WebSocket support for real-time updates
-socketio = SocketIO(app, 
-    cors_allowed_origins="*",
-    async_mode='gevent',
-    ping_timeout=10,
-    ping_interval=5
-)
 
 @socketio.on('connect')
 def handle_connect():
@@ -63,7 +67,5 @@ def process_bits_event(user, bits):
     return True
 
 if __name__ == "__main__":
-    import eventlet
-    eventlet.monkey_patch()
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port)

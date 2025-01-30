@@ -6,7 +6,7 @@
       body {
         margin: 0;
         padding: 0;
-        background: rgba(0, 0, 0, 0.1); /* Slightly visible background */
+        background: rgba(0, 0, 0, 0.1);
       }
       #fire-gif {
         display: none;
@@ -30,17 +30,17 @@
 
     <script>
       const socket = io({
+        transports: ["polling"],
         path: "/socket.io",
-        transports: ["polling", "websocket"],
-        upgrade: true,
-        rememberUpgrade: true,
-        secure: true,
-        rejectUnauthorized: false,
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5,
       });
+
       const fireGif = document.getElementById("fire-gif");
       const status = document.getElementById("status");
 
-      // Connection status handlers
       socket.on("connect", () => {
         status.textContent = "Connected to server!";
         console.log("Connection established!");
