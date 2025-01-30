@@ -21,8 +21,9 @@ def process_bits_event(user, bits):
     
     if bits == 1:
         print("🔥 FIRE MODE ACTIVATED!")
-        # Emit WebSocket event to trigger the GIF
+        print("Emitting WebSocket event for fire gif")
         socketio.emit('show_fire_gif', {'show': True})
+        print("WebSocket event emitted")
     
     return True
 
