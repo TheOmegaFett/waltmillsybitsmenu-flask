@@ -20,8 +20,9 @@ def handle_bits():
     data = request.json
     bits_used = data.get("bits_used", 0)
     user = data.get("user_name", "Unknown")
+    sku = data.get("sku")  # Add SKU logging
     
-    print(f"💰 {user} spent {bits_used} Bits!")
+    print(f"💰 Transaction attempt: User={user}, Bits={bits_used}, SKU={sku}")
 
     if bits_used == 1:
         socketio.emit('show_fire_gif', {'show': True})
