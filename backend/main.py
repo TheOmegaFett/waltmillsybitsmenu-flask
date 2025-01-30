@@ -571,7 +571,7 @@ async def listen_to_channel_points(bot):
                 ping_task.cancel()
 
 
-async def main():
+async def start_bot():
     bot = Bot()
     print("Bot initialized")
     
@@ -583,5 +583,3 @@ async def main():
     await asyncio.gather(bot_task, points_task)
     
     
-if __name__ == "__main__":
-    asyncio.run(main())

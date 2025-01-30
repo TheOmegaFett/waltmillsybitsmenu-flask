@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
 import eventlet
-from main import Bot, main  # Import your Bot class
+from main import Bot, start_bot  # Import your Bot class
 
 eventlet.monkey_patch()
 
@@ -17,7 +17,7 @@ bot = Bot()
 
 # Create background task for bot
 def run_bot():
-    asyncio.run(main())  # Your existing main() function
+    asyncio.run(start_bot())  # Your existing main() function
 
 @app.route('/overlay')
 def overlay():
