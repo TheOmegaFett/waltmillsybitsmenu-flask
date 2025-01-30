@@ -34,8 +34,9 @@ async def main():
     bot = Bot()
     bot.loop = loop
     
-    # Set up Redis connection
-    redis_url = os.getenv('REDIS_URL')
+    # Get Redis URL with fallback
+    redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
+    logger.debug(f"Connecting to Redis at: {redis_url}")
     redis_client = redis.from_url(redis_url)
     
     # Run both bot and bits listener
@@ -46,3 +47,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    
+    
