@@ -1,8 +1,11 @@
 import eventlet
 eventlet.monkey_patch()
 
-import os
 import asyncio
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
+import os
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -12,12 +15,9 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', ping_timeout=10000, ping_interval=5000)
 
-# Initialize bot
+# Initialize bot with the event loop
 bot = Bot()
-
-# Create background task for bot
-def run_bot():
-    asyncio.run(start_bot())  # Your existing main() function
+bot.loop = loop
 
 @app.route('/overlay')
 def overlay():
@@ -39,19 +39,5 @@ def handle_bits():
     return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
 
 if __name__ == "__main__":
-    # Set up event loop for main thread
-    eventlet.monkey_patch()
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    
-    # Create application context
-    with app.app_context():
-        # Start bot in background thread
-        from threading import Thread
-        bot_thread = Thread(target=lambda: loop.run_until_complete(start_bot()))
-        bot_thread.daemon = True
-        bot_thread.start()
-        
-        # Start Flask server
-        port = int(os.environ.get("PORT", 5000))
-        socketio.run(app, host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host="0.0.0.0", port=port)
