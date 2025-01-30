@@ -47,6 +47,7 @@ class Bot(commands.Bot):
             # Create a new file with an empty JSON object
             with open('viewer_data.json', 'w') as f:
                 json.dump({}, f)
+                return {}
 
     async def event_ready(self):
         logger.info(f'Logged in as | {self.nick}')
