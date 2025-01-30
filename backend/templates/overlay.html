@@ -13,25 +13,29 @@
         display: none;
         width: 100%;
         max-width: 500px;
+        position: absolute;
       }
       #status {
         color: black;
         font-family: Arial;
         padding: 10px;
+        color: #00000000;
       }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
   </head>
   <body>
     <div id="status">Waiting for bits...</div>
-    <img
-      id="fire-gif"
-      src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXE5b21wbWc1M2EyOXMxeTJtdDNpcWtjeTdnZDMzdTkwN3J5Z3k3cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lTkOQ1aacqClLCcBZq/giphy.gif"
-    />
-    <img
-      id="dropbear-gif"
-      src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHM2Y2ZvenllMzlmamxrZGIyc3kwcWhsOW1lZHA4cDZ6ZHA5OGtubCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0Exl5jVNZPXUH77G/giphy.gif"
-    />
+    <div id="gif-container">
+      <img
+        id="fire-gif"
+        src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXE5b21wbWc1M2EyOXMxeTJtdDNpcWtjeTdnZDMzdTkwN3J5Z3k3cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lTkOQ1aacqClLCcBZq/giphy.gif"
+      />
+      <img
+        id="dropbear-gif"
+        src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHM2Y2ZvenllMzlmamxrZGIyc3kwcWhsOW1lZHA4cDZ6ZHA5OGtubCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0Exl5jVNZPXUH77G/giphy.gif"
+      />
+    </div>
 
     <script>
       const socket = io("https://waltmillsybitsmenu-flask.onrender.com", {
@@ -51,6 +55,8 @@
 
       socket.on("show_fire_gif", (data) => {
         status.textContent = "Fire GIF triggered!";
+        // Hide dropbear gif explicitly
+        dropbearGif.style.display = "none";
         fireGif.style.display = "block";
         setTimeout(() => {
           fireGif.style.display = "none";
@@ -60,6 +66,8 @@
 
       socket.on("show_dropbear_gif", (data) => {
         status.textContent = "Drop Bear Attack!";
+        // Hide fire gif explicitly
+        fireGif.style.display = "none";
         dropbearGif.style.display = "block";
         setTimeout(() => {
           dropbearGif.style.display = "none";
