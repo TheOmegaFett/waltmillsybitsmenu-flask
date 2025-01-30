@@ -20,4 +20,5 @@ if __name__ == "__main__":
     bot = Bot()
     loop = asyncio.get_event_loop()
     loop.create_task(listen_for_commands(bot))
-    loop.run_until_complete(bot.start())
+    loop.create_task(bot.start())
+    loop.run_forever()  # Keep the bot running and handling commands
