@@ -2,9 +2,8 @@ import redis
 import json
 import os
 
-# Default to local Redis if no URL provided
-redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379')
-redis_client = redis.from_url(redis_url)
+# Use internal Redis connection for Render
+redis_client = redis.Redis(host='bot-redis', port=6379, db=0)
 
 def send_command(command_type, data):
     message = {
