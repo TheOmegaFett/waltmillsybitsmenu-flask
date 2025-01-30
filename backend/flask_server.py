@@ -13,19 +13,20 @@ def overlay():
     return render_template('overlay.html', show_gif=False)
 
 # Add WebSocket support for real-time updates
-
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+@socketio.on('connect')
+def handle_connect():
+    print("Client connected to WebSocket!")
 
 def process_bits_event(user, bits):
     print(f"🎉 Processing {bits} Bits from {user}")
-    
+
     if bits == 1:
         print("🔥 FIRE MODE ACTIVATED!")
-        print("Emitting WebSocket event for fire gif")
-        socketio.emit('show_fire_gif', {'show': True})
-        print("WebSocket event emitted")
-    
-    return True
+        print("Emitting fire_gif event...")
+        socketio.emit('show_fire_gif', {'show': True}, broadcast=True)
+return True
 
 @app.route('/bits', methods=['POST'])
 def handle_bits():
@@ -57,5 +58,5 @@ def process_bits_event(user, bits):
     return True
 if __name__ == "__main__":
     import os
-    port = int(os.environ.get("PORT", 5000))  # Render assigns a port dynamically
-    app.run(host="0.0.0.0", port=port, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)

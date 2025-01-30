@@ -24,14 +24,18 @@
 
     <script>
       const socket = io();
-      const fireGif = document.getElementById("fire-gif");
+
+      socket.on("connect", () => {
+        console.log("WebSocket Connected!");
+      });
 
       socket.on("show_fire_gif", (data) => {
+        console.log("Received fire gif event!", data);
         if (data.show) {
           fireGif.style.display = "block";
           setTimeout(() => {
             fireGif.style.display = "none";
-          }, 5000); // Hide after 5 seconds
+          }, 5000);
         }
       });
     </script>
