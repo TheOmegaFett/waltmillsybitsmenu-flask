@@ -18,7 +18,7 @@ async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
         
-        # Create message with minimal required attributes
+        # Create message with complete TwitchIO attributes
         message = type('Message', (), {
             'content': '!dropbear',
             'channel': channel,
@@ -27,7 +27,11 @@ async def execute_dropbear_event(bot, channel, user):
                 'display_name': user,
                 'is_mod': True,
                 'is_broadcaster': True
-            })
+            }),
+            'tags': {},  # Required for prefix checking
+            'echo': False,
+            'raw_data': None,
+            'timestamp': None
         })
         
         ctx = await bot.get_context(message)
