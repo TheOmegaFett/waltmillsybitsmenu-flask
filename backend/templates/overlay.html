@@ -34,18 +34,7 @@
   </head>
   <body>
     <div id="status">Waiting for bits...</div>
-    <div id="fire-container">
-      <img
-        id="fire-gif"
-        src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXE5b21wbWc1M2EyOXMxeTJtdDNpcWtjeTdnZDMzdTkwN3J5Z3k3cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lTkOQ1aacqClLCcBZq/giphy.gif"
-      />
-    </div>
-    <div id="dropbear-container">
-      <img
-        id="dropbear-gif"
-        src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHM2Y2ZvenllMzlmamxrZGIyc3kwcWhsOW1lZHA4cDZ6ZHA5OGtubCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0Exl5jVNZPXUH77G/giphy.gif"
-      />
-    </div>
+    <div id="gif-container"></div>
 
     <script>
       const socket = io("https://waltmillsybitsmenu-flask.onrender.com", {
@@ -54,33 +43,36 @@
         reconnectionDelay: 1000,
         reconnectionAttempts: 5,
       });
-      const fireGif = document.getElementById("fire-gif");
-      const dropbearGif = document.getElementById("dropbear-gif");
-      const status = document.getElementById("status");
 
-      // Now we can hide them after they're defined
-      fireGif.style.display = "none";
-      dropbearGif.style.display = "none";
-      socket.on("connect", () => {
-        status.textContent = "Connected to server!";
-      });
+      const container = document.getElementById("gif-container");
+      const status = document.getElementById("status");
 
       socket.on("show_fire_gif", (data) => {
         status.textContent = "Fire GIF triggered!";
-        dropbearGif.style.display = "none"; // Hide dropbear first
-        fireGif.style.display = "block"; // Then show fire
+        const fireGif = document.createElement("img");
+        fireGif.src =
+          "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXE5b21wbWc1M2EyOXMxeTJtdDNpcWtjeTdnZDMzdTkwN3J5Z3k3cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lTkOQ1aacqClLCcBZq/giphy.gif";
+        fireGif.style.width = "100%";
+        fireGif.style.maxWidth = "500px";
+        container.appendChild(fireGif);
+
         setTimeout(() => {
-          fireGif.style.display = "none";
+          container.removeChild(fireGif);
           status.textContent = "Waiting for bits...";
         }, 5000);
       });
 
       socket.on("show_dropbear_gif", (data) => {
         status.textContent = "Drop Bear Attack!";
-        fireGif.style.display = "none"; // Hide fire first
-        dropbearGif.style.display = "block"; // Then show dropbear
+        const dropbearGif = document.createElement("img");
+        dropbearGif.src =
+          "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHM2Y2ZvenllMzlmamxrZGIyc3kwcWhsOW1lZHA4cDZ6ZHA5OGtubCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0Exl5jVNZPXUH77G/giphy.gif";
+        dropbearGif.style.width = "100%";
+        dropbearGif.style.maxWidth = "500px";
+        container.appendChild(dropbearGif);
+
         setTimeout(() => {
-          dropbearGif.style.display = "none";
+          container.removeChild(dropbearGif);
           status.textContent = "Waiting for bits...";
         }, 5000);
       });

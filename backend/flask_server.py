@@ -25,12 +25,13 @@ def handle_bits():
     print(f"💰 Transaction attempt: User={user}, Bits={bits_used}, SKU={sku}")
 
     if bits_used == 1:
-        print("🔥 Fire gif triggered")
+        print("Triggering hello command")
         socketio.emit('show_fire_gif', {'show': True})
+        send_command('!hello', {'user': user})
         return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
     elif bits_used == 50:
         socketio.emit('show_dropbear_gif', {'show': True})
-        send_command('dropbear', {'user': user})
+        send_command('!dropbear', {'user': user})
         return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
 
     return jsonify({"status": "error", "message": "Invalid bits amount"})
