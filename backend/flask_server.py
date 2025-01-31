@@ -32,10 +32,9 @@ def health_check():
 
 @app.route('/bits', methods=['POST'])
 def handle_bits():
-    print("Received bits request")
-    print(f"Request data: {request.get_data()}")
-    print(f"Request headers: {request.headers}")
-    
+    if not request.is_json:
+        return jsonify({"error": "Content-Type must be application/json"}), 400
+        
     data = request.json
     bits_used = data.get("bits_used", 0)
     user = data.get("user_name", "Unknown")
