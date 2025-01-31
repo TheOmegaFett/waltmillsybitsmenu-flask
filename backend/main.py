@@ -44,14 +44,23 @@ class Bot(commands.Bot):
         pubsub = redis_client.pubsub()
         pubsub.subscribe('bot_commands')
     
+        print("🔌 Redis listener started")
+    
         while True:
             message = pubsub.get_message()
             if message and message['type'] == 'message':
                 data = json.loads(message['data'])
+                print(f"📥 Received Redis message: {data}")
                 if data['type'] == '!dropbear':
-                    # Create a mock context for the dropbear command
                     channel = self.get_channel(os.getenv('TWITCH_CHANNEL'))
-                    mock_ctx = type('Context', (), {'send': channel.send, 'author': type('Author', (), {'is_mod': True, 'is_broadcaster': True})()})()
+                    mock_ctx = type('Context', (), {
+                        'send': channel.send, 
+                        'author': type('Author', (), {
+                            'is_mod': True, 
+                            'is_broadcaster': True,
+                            'name': data['data']['user']
+                        })()
+                    })()
                     await self.dropbear(mock_ctx)
             await asyncio.sleep(0.1)
 

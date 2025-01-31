@@ -20,18 +20,18 @@ def handle_bits():
     data = request.json
     bits_used = data.get("bits_used", 0)
     user = data.get("user_name", "Unknown")
-    sku = data.get("sku")  # Add SKU logging
     
-    print(f"💰 Transaction attempt: User={user}, Bits={bits_used}, SKU={sku}")
-
-    if bits_used == 1:
-        print("Triggering hello command")
-        socketio.emit('show_fire_gif', {'show': True})
-        send_command('!hello', {'user': user})
-        return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
-    elif bits_used == 50:
+    print(f"💰 Transaction attempt: User={user}, Bits={bits_used}")
+    
+    if bits_used == 50:
         socketio.emit('show_dropbear_gif', {'show': True})
-        send_command('!dropbear', {'user': user})
+        command_data = {
+            'type': '!dropbear',
+            'data': {'user': user}
+        }
+        # Add logging
+        print(f"📨 Publishing to Redis: {command_data}")
+        redis_client.publish('bot_commands', json.dumps(command_data))
         return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
 
     return jsonify({"status": "error", "message": "Invalid bits amount"})
