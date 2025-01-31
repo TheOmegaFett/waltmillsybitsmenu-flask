@@ -18,23 +18,31 @@ async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
         
-        # Get the command from bot's commands dictionary
-        dropbear_command = bot.commands['dropbear']
+        # Create a message object that get_context expects
+        message = type('Message', (), {
+            'content': '!dropbear',
+            'channel': channel,
+            'author': type('Author', (), {
+                'name': user,
+                'display_name': user,
+                'is_mod': True,
+                'is_broadcaster': True
+            })
+        })
         
-        # Create context using bot's own context creation
-        ctx = await bot.get_context(channel, user)
+        # Get context using the message object
+        ctx = await bot.get_context(message)
         
         logger.info("🎯 Using bot's native context")
         logger.info("🎯 Executing dropbear command...")
         
-        # Execute command using bot's own command
-        await dropbear_command(ctx)
+        # Execute the command
+        await bot.dropbear(ctx)
         
         logger.info("🎯 Dropbear command completed")
         
     except Exception as e:
         logger.error(f"🚫 Error in dropbear execution: {str(e)}", exc_info=True)
-
 async def listen_for_bits(bot, redis_client):
     try:
         pubsub = redis_client.pubsub(ignore_subscribe_messages=True)
