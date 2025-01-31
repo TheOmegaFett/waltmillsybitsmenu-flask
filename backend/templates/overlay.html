@@ -53,9 +53,13 @@
         }
       }
 
+      let isPlaying = false;
+
       socket.on("show_fire_gif", (data) => {
-        clearContainer(); // More thorough cleanup
+        if (isPlaying) return;
+        isPlaying = true;
         status.textContent = "Fire GIF triggered!";
+        container.innerHTML = "";
         const fireGif = document.createElement("img");
         fireGif.src =
           "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXE5b21wbWc1M2EyOXMxeTJtdDNpcWtjeTdnZDMzdTkwN3J5Z3k3cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lTkOQ1aacqClLCcBZq/giphy.gif";
@@ -64,8 +68,9 @@
         container.appendChild(fireGif);
 
         setTimeout(() => {
-          clearContainer();
+          container.innerHTML = "";
           status.textContent = "Waiting for bits...";
+          isPlaying = false;
         }, 5000);
       });
       socket.on("show_dropbear_gif", (data) => {

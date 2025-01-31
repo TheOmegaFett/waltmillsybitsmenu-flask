@@ -562,15 +562,17 @@ import redis
 
 # In the Bot class
 async def setup_redis_listener(self):
+    self.redis_task = asyncio.create_task(self._listen_to_redis())
+
+async def _listen_to_redis(self):
     redis_client = redis.Redis(host='redis', port=6379, decode_responses=True)
     pubsub = redis_client.pubsub()
     pubsub.subscribe('bot_commands')
     
-    while True:  # Keep listening
+    while True:
         message = pubsub.get_message()
         if message and message['type'] == 'message':
             data = json.loads(message['data'])
-            command = data['type']
-            if command == '!dropbear':
-                await self.dropbear(None)  # Call the command directly
-        await asyncio.sleep(0.1)  # Prevent CPU overload
+            if data['type'] == '!dropbear':
+                await self.dropbear(None)
+        await asyncio.sleep(0.1)
