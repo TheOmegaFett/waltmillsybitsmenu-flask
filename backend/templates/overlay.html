@@ -35,7 +35,6 @@
   <body>
     <div id="status">Waiting for bits...</div>
     <div id="gif-container"></div>
-
     <script>
       const socket = io("https://waltmillsybitsmenu-flask.onrender.com", {
         transports: ["websocket", "polling"],
@@ -46,20 +45,14 @@
 
       const container = document.getElementById("gif-container");
       const status = document.getElementById("status");
-      // Add a cleanup function
-      function clearContainer() {
-        while (container.firstChild) {
-          container.removeChild(container.firstChild);
-        }
-      }
-
       let isPlaying = false;
 
       socket.on("show_fire_gif", (data) => {
         if (isPlaying) return;
         isPlaying = true;
         status.textContent = "Fire GIF triggered!";
-        container.innerHTML = "";
+        clearContainer();
+
         const fireGif = document.createElement("img");
         fireGif.src =
           "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXE5b21wbWc1M2EyOXMxeTJtdDNpcWtjeTdnZDMzdTkwN3J5Z3k3cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lTkOQ1aacqClLCcBZq/giphy.gif";
@@ -68,14 +61,18 @@
         container.appendChild(fireGif);
 
         setTimeout(() => {
-          container.innerHTML = "";
+          clearContainer();
           status.textContent = "Waiting for bits...";
           isPlaying = false;
         }, 5000);
       });
+
       socket.on("show_dropbear_gif", (data) => {
+        if (isPlaying) return;
+        isPlaying = true;
         status.textContent = "Drop Bear Attack!";
-        container.innerHTML = ""; // Clear container first
+        clearContainer();
+
         const dropbearGif = document.createElement("img");
         dropbearGif.src =
           "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHM2Y2ZvenllMzlmamxrZGIyc3kwcWhsOW1lZHA4cDZ6ZHA5OGtubCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0Exl5jVNZPXUH77G/giphy.gif";
@@ -84,10 +81,17 @@
         container.appendChild(dropbearGif);
 
         setTimeout(() => {
-          container.innerHTML = ""; // Clear container after timeout
+          clearContainer();
           status.textContent = "Waiting for bits...";
+          isPlaying = false;
         }, 5000);
       });
+
+      function clearContainer() {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+      }
     </script>
   </body>
 </html>
