@@ -18,39 +18,18 @@ async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
         
-        # Create a more complete mock context
-        mock_ctx = type('Context', (), {
-            'send': channel.send,
-            'channel': channel,
-            'view': None,
-            'command': type('Command', (), {
-                'name': 'dropbear',
-                'aliases': [],
-                'callback': bot.dropbear
-            })(),
-            'author': type('Author', (), {
-                'is_mod': True,
-                'is_broadcaster': True,
-                'name': user,
-                'display_name': user,
-                'channel': channel
-            })(),
-            'message': type('Message', (), {
-                'content': '!dropbear',
-                'channel': channel,
-                'echo': False,
-                'raw_data': None,
-                'author': type('Author', (), {
-                    'name': user,
-                    'display_name': user,
-                    'channel': channel
-                })()
-            })()
-        })
+        # Get the command from bot's commands dictionary
+        dropbear_command = bot.commands['dropbear']
         
-        logger.info("🎯 Mock context created with full command attributes")
+        # Create context using bot's own context creation
+        ctx = await bot.get_context(channel, user)
+        
+        logger.info("🎯 Using bot's native context")
         logger.info("🎯 Executing dropbear command...")
-        await bot.dropbear(mock_ctx)
+        
+        # Execute command using bot's own command
+        await dropbear_command(ctx)
+        
         logger.info("🎯 Dropbear command completed")
         
     except Exception as e:
