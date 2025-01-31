@@ -10,6 +10,4 @@ def send_command(command_type, data):
         'type': command_type,
         'data': data
     }
-    # Add logging to track message publishing
-    print(f"Publishing command to Redis: {message}")
     redis_client.publish('bot_commands', json.dumps(message))

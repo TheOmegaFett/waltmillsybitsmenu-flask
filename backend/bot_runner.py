@@ -51,9 +51,9 @@ async def listen_for_bits(bot, redis_client):
                     })
                     
                     if data['type'] == 'dropbear':
-                        logger.info("🐨 Executing dropbear command")
-                        await bot.dropbear(mock_ctx)  # Call the original method directly
-                        logger.info("🐨 Dropbear command completed")
+                        channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
+                        if channel:
+                            await execute_dropbear_event(bot, channel, data['data']['user'])
                     
             await asyncio.sleep(0.1)
     except Exception as e:
@@ -70,3 +70,26 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+async def execute_dropbear_event(bot, channel, user):
+    """Direct method to trigger dropbear without command system"""
+    mock_ctx = type('Context', (), {
+        'send': channel.send,
+        'channel': channel,
+        'view': None,
+        'author': type('Author', (), {
+            'is_mod': True,
+            'is_broadcaster': True,
+            'name': user,
+            'display_name': user
+        })(),
+        'message': type('Message', (), {
+            'content': '!dropbear',
+            'channel': channel,
+            'author': type('Author', (), {
+                'name': user,
+                'display_name': user
+            })()
+        })()
+    })
+    await bot.dropbear(mock_ctx)
