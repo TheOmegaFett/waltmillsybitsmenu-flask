@@ -33,28 +33,30 @@ def health_check():
 @app.route('/bits', methods=['POST'])
 def handle_bits():
     print("🔍 Incoming Twitch Transaction:")
-    print(f"Raw Data: {request.get_data()}")
+    print(f"Raw Data: {request.get_data(as_text=True)}")
     
     try:
         data = request.json
-        # Map Twitch transaction format
         user = data.get("displayName")
         product = data.get("product", {})
-        cost = product.get("cost", {})
-        bits_used = cost.get("amount", 0)
         
-        print(f"💰 Processed transaction: User={user}, Bits={bits_used}")
+        print(f"� Product data: {product}")
+        print(f"👤 User: {user}")
+        
+        if product:
+            bits_used = product.get("cost", {}).get("amount", 0)
+            print(f"💰 Bits used: {bits_used}")
 
-        if bits_used == 1:
-            socketio.emit('show_fire_gif', {'show': True})
-            send_command('!hello', {'user': user})
-            return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
-        elif bits_used == 50:
-            print("🐨 Starting dropbear command flow")
-            socketio.emit('show_dropbear_gif', {'show': True})
-            send_command('dropbear', {'user': user})
-            print("🐨 Dropbear command completed")
-            return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
+            if bits_used == 1:
+                socketio.emit('show_fire_gif', {'show': True})
+                send_command('!hello', {'user': user})
+                return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
+            elif bits_used == 50:
+                print("🐨 Starting dropbear command flow")
+                socketio.emit('show_dropbear_gif', {'show': True})
+                send_command('dropbear', {'user': user})
+                print("🐨 Dropbear command completed")
+                return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
         
         return jsonify({"status": "error", "message": "Invalid bits amount"}), 400
     except Exception as e:
