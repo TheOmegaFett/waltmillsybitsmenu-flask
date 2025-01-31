@@ -55,7 +55,6 @@
 
       socket.on("show_fire_gif", (data) => {
         status.textContent = "Fire GIF triggered!";
-        dropbearGif.style.display = "none";
         fireGif.style.display = "block";
         setTimeout(() => {
           fireGif.style.display = "none";
@@ -65,7 +64,6 @@
 
       socket.on("show_dropbear_gif", (data) => {
         status.textContent = "Drop Bear Attack!";
-        fireGif.style.display = "none";
         dropbearGif.style.display = "block";
         setTimeout(() => {
           dropbearGif.style.display = "none";
