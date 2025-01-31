@@ -17,8 +17,14 @@ logger = logging.getLogger(__name__)
 async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
+        
+        # Create a send method that's properly bound to the channel
+        async def send_message(content):
+            logger.info(f"📨 Sending message to chat: {content}")
+            await channel.send(content)
+            
         mock_ctx = type('Context', (), {
-            'send': channel.send,
+            'send': send_message,  # Use our new send method
             'channel': channel,
             'view': None,
             'author': type('Author', (), {
@@ -36,14 +42,13 @@ async def execute_dropbear_event(bot, channel, user):
                 })()
             })()
         })
+        
         logger.info("🎯 Mock context created")
-        try:
-            await bot.dropbear(mock_ctx)
-            logger.info("🎯 Dropbear command executed successfully")
-        except Exception as e:
-            logger.error(f"🚫 Error in dropbear command: {str(e)}", exc_info=True)
+        await bot.dropbear(mock_ctx)
+        logger.info("🎯 Dropbear command executed successfully")
+        
     except Exception as e:
-        logger.error(f"🚫 Error in context creation: {str(e)}", exc_info=True)
+        logger.error(f"🚫 Error: {str(e)}", exc_info=True)
 
 async def listen_for_bits(bot, redis_client):
     try:
