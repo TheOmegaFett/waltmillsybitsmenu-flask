@@ -254,8 +254,8 @@ class Bot(commands.Bot):
         """
         Triggers a random Drop Bear event in chat. Moderator only command.
         """
-        logger.info(f"Starting dropbear command for {ctx.author.name}")
-
+        logger.info(f"⚡ Dropbear command initiated by {ctx.author.name}")
+    
         import random
 
         aussie_items = [
@@ -274,7 +274,7 @@ class Bot(commands.Bot):
             "Weet-Bix war hammer",
             "Paddle Pop sword"
         ]
-        logger.info("Items list loaded")
+        logger.info("📦 Items list loaded")
 
         locations = [
             "gum tree",
@@ -294,39 +294,40 @@ class Bot(commands.Bot):
             "Centrelink queue",
             "train station pie warmer"
         ]
-        logger.info("Locations list loaded")
+        logger.info("📍 Locations list loaded")
 
         self.drop_bear_active = True
-        logger.info(f"Drop bear status set to: {self.drop_bear_active}")
+        logger.info(f"🔄 Drop bear status: {self.drop_bear_active}")
 
         item = random.choice(aussie_items)
         location = random.choice(locations)
-        logger.info(f"Selected item: {item}, location: {location}")
+        logger.info(f"🎲 Selected: {item} at {location}")
 
-        await ctx.send(f"🐨 STREWTH! Drop Bear spotted near the {location}! Quick, type !protect to use your {item}!")
-        logger.info("Initial dropbear message sent")
+        try:
+            await ctx.send(f"🐨 STREWTH! Drop Bear spotted near the {location}! Quick, type !protect to use your {item}!")
+            logger.info("💬 Initial message sent to chat")
+        except Exception as e:
+            logger.error(f"❌ Failed to send message: {e}")
 
-        # Give chat 15 seconds to protect themselves
-        import asyncio
-        logger.info("Starting 15 second timer")
+        logger.info("⏲️ Starting 15s timer")
         await asyncio.sleep(15)
-        logger.info("Timer completed")
+        logger.info("⏲️ Timer complete")
 
-        # Check who survived
         survivors = getattr(self, 'protected_viewers', set())
-        logger.info(f"Found survivors: {survivors}")
+        logger.info(f"👥 Survivors found: {survivors}")
 
-        if survivors:
-            await ctx.send(f"Fair dinkum! {', '.join(survivors)} survived the Drop Bear attack!")
-        else:
-            await ctx.send("Crikey! The Drop Bear got everyone!")
-        logger.info("Final survival message sent")
+        try:
+            if survivors:
+                await ctx.send(f"Fair dinkum! {', '.join(survivors)} survived the Drop Bear attack!")
+            else:
+                await ctx.send("Crikey! The Drop Bear got everyone!")
+            logger.info("💬 Results message sent")
+        except Exception as e:
+            logger.error(f"❌ Failed to send results: {e}")
 
-        # Reset for next drop bear attack
         self.drop_bear_active = False
         self.protected_viewers = set()
-        logger.info("Drop bear reset complete")
-
+        logger.info("🔄 Drop bear reset complete")
         """
         Lets viewers protect themselves from the Drop Bear
         """
