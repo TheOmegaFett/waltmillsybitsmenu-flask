@@ -39,14 +39,23 @@ def handle_bits():
         data = request.json
         user = data.get("displayName")
         product = data.get("product", {})
-        bits_used = product.get("cost", {}).get("amount", 0)
         
-        print(f"💰 Transaction details:")
-        print(f"User: {user}")
-        print(f"Product: {product}")
-        print(f"Bits used: {bits_used}")
+        # Detailed logging of the product structure
+        print(f"👤 User: {user}")
+        print(f"📦 Full Product Object: {product}")
+        
+        # Try different paths to find bits amount
+        bits_used = (
+            product.get("cost", {}).get("amount") or
+            product.get("bits") or
+            product.get("amount") or
+            0
+        )
+        
+        print(f"💰 Bits Amount Found: {bits_used}")
 
         if bits_used == 1:
+            print("🔥 Triggering fire gif")
             socketio.emit('show_fire_gif', {'show': True})
             send_command('!hello', {'user': user})
             return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
@@ -57,11 +66,10 @@ def handle_bits():
             print("🐨 Dropbear command completed")
             return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
         
-        return jsonify({"status": "error", "message": "Invalid bits amount"}), 400
+        return jsonify({"status": "error", "message": f"Invalid bits amount: {bits_used}"}), 400
     except Exception as e:
         print(f"❌ Error processing request: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port)
