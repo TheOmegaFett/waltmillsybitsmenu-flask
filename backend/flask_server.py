@@ -32,34 +32,20 @@ def health_check():
 
 @app.route('/bits', methods=['POST'])
 def handle_bits():
-    print("🔍 Incoming Twitch Transaction:")
-    print(f"Raw Data: {request.get_data(as_text=True)}")
-    
     try:
         data = request.json
         user = data.get("displayName")
         product = data.get("product", {})
         bits_used = int(product.get("cost", {}).get("amount", 0))
         
-        print(f"💰 Bits Amount Found: {bits_used}")
-
-        if bits_used == 1:
-            print("🔥 Triggering fire gif")
-            socketio.emit('show_fire_gif', {'show': True})
-            # Simplified command sending
-            send_command('!hello', {'user': user})
-            return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
-        elif bits_used == 50:
-            print("🐨 Starting dropbear command flow")
+        if bits_used == 50:
+            # Use eventlet.spawn to handle the Redis publish in a non-blocking way
+            eventlet.spawn(send_command, 'dropbear', {'user': user})
             socketio.emit('show_dropbear_gif', {'show': True})
-            # Simplified command sending
-            send_command('dropbear', {'user': user})
-            print("🐨 Dropbear command completed")
             return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
         
         return jsonify({"status": "error", "message": f"Invalid bits amount: {bits_used}"}), 400
     except Exception as e:
-        print(f"❌ Error processing request: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
