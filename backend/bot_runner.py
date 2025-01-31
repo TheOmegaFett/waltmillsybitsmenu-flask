@@ -18,7 +18,7 @@ async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
         
-        # Create a message object that get_context expects
+        # Create a complete message object with all required TwitchIO attributes
         message = type('Message', (), {
             'content': '!dropbear',
             'channel': channel,
@@ -27,18 +27,18 @@ async def execute_dropbear_event(bot, channel, user):
                 'display_name': user,
                 'is_mod': True,
                 'is_broadcaster': True
-            })
+            }),
+            'tags': {},  # Add empty tags dict
+            'echo': False,
+            'raw_data': None,
+            'timestamp': None
         })
         
-        # Get context using the message object
         ctx = await bot.get_context(message)
-        
         logger.info("🎯 Using bot's native context")
         logger.info("🎯 Executing dropbear command...")
         
-        # Execute the command
         await bot.dropbear(ctx)
-        
         logger.info("🎯 Dropbear command completed")
         
     except Exception as e:
