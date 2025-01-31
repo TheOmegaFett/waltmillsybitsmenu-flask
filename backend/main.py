@@ -253,11 +253,14 @@ class Bot(commands.Bot):
             await ctx.send(f"Welcome to your streaks first stream, {viewer}!")
     @commands.command()
     async def dropbear(self, ctx):
-        """
-        Triggers a random Drop Bear event in chat. Moderator only command.
-        """
+        """Triggers a random Drop Bear event in chat"""
         logger.info(f"⚡ Dropbear command initiated by {ctx.author.name}")
-    
+        
+        # Reset protection state at start of new event
+        self.protected_viewers = set()
+        self.drop_bear_active = True
+        logger.info(f"🔄 Drop bear status: {self.drop_bear_active}")
+
         import random
 
         aussie_items = [
@@ -298,9 +301,6 @@ class Bot(commands.Bot):
         ]
         logger.info("📍 Locations list loaded")
 
-        self.drop_bear_active = True
-        logger.info(f"🔄 Drop bear status: {self.drop_bear_active}")
-
         item = random.choice(aussie_items)
         location = random.choice(locations)
         logger.info(f"🎲 Selected: {item} at {location}")
@@ -315,7 +315,8 @@ class Bot(commands.Bot):
         await asyncio.sleep(15)
         logger.info("⏲️ Timer complete")
 
-        survivors = getattr(self, 'protected_viewers', set())
+        # Get final survivors and send results
+        survivors = self.protected_viewers
         logger.info(f"👥 Survivors found: {survivors}")
 
         try:
@@ -327,7 +328,9 @@ class Bot(commands.Bot):
         except Exception as e:
             logger.error(f"❌ Failed to send results: {e}")
 
+        # Reset state after event ends
         self.drop_bear_active = False
+        self.protected_viewers = set()
     @commands.command(name='protect')
     async def protect(self, ctx):
         """Lets viewers protect themselves from the Drop Bear"""
