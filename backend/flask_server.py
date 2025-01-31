@@ -50,7 +50,7 @@ def handle_bits():
         return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
     elif bits_used == 50:
         socketio.emit('show_dropbear_gif', {'show': True})
-        send_command('!dropbear', {'user': user})
+        send_command('dropbear', {'user': user})
         return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
     
     return jsonify({"status": "error", "message": "Invalid bits amount"}), 400
