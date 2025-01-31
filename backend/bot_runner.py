@@ -18,16 +18,17 @@ async def listen_for_bits(bot, redis_client):
     try:
         pubsub = redis_client.pubsub(ignore_subscribe_messages=True)
         pubsub.subscribe('bot_commands')
-        logger.debug("Successfully connected to Redis pubsub")
+        logger.info("🎮 Bot listening for Redis commands")
         
         while True:
             message = pubsub.get_message()
             if message and message['type'] == 'message':
                 data = json.loads(message['data'])
-                logger.debug(f"Bot received command: {data}")
+                logger.info(f"🎯 Received command: {data}")
                 
                 channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
                 if channel:
+                    logger.info(f"📢 Executing command in channel: {channel.name}")
                     mock_ctx = type('Context', (), {
                         'send': channel.send,
                         'author': type('Author', (), {
@@ -36,16 +37,19 @@ async def listen_for_bits(bot, redis_client):
                             'name': data['data']['user']
                         })(),
                         'view': None,
-                        'message': type('Message', (), {'content': ''})()
+                        'message': type('Message', (), {
+                            'content': '',
+                            'channel': channel
+                        })()
                     })()
                     
                     if data['type'] == 'dropbear':
-                        logger.debug(f"Executing dropbear command for {data['data']['user']}")
                         await bot.dropbear(mock_ctx)
+                        logger.info("🐨 Dropbear command executed successfully")
                     
             await asyncio.sleep(0.1)
     except Exception as e:
-        logger.error(f"Redis connection error: {e}", exc_info=True)
+        logger.error(f"❌ Redis connection error: {e}", exc_info=True)
 
 async def main():
     loop = asyncio.get_event_loop()
