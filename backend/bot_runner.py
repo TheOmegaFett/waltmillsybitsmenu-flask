@@ -28,13 +28,15 @@ async def listen_for_bits(bot, redis_client):
                 
                 if data.get('type') == 'dropbear':
                     channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
+                    # Enhanced mock context with view attribute
                     mock_ctx = type('Context', (), {
                         'send': channel.send,
                         'author': type('Author', (), {
                             'is_mod': True,
                             'is_broadcaster': True,
                             'name': data['data']['user']
-                        })()
+                        })(),
+                        'view': None  # Add the missing view attribute
                     })()
                     await bot.dropbear(mock_ctx)
                     

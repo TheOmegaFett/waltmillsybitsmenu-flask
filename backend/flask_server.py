@@ -2,8 +2,9 @@ import eventlet
 eventlet.monkey_patch()
 
 import redis
+from redis.exceptions import ConnectionError
 
-redis_client = redis.Redis.from_url('redis://red-cudsn6lds78s73dfsh0g:6379')
+redis_client = redis.Redis.from_url('redis://red-cudsn6lds78s73dfsh0g:6379', decode_responses=True)
 
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
@@ -55,7 +56,8 @@ def handle_bits():
         elif bits_used == 50:
             print("🐨 Starting dropbear command flow")
             socketio.emit('show_dropbear_gif', {'show': True})
-            send_command('dropbear', {'user': user})
+            with app.app_context():  # Ensure Flask app context is active
+                send_command('dropbear', {'user': user})
             print("🐨 Dropbear command completed")
             return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
         
