@@ -42,8 +42,6 @@ def handle_bits():
         data = request.json
         user = data.get("displayName")
         product = data.get("product", {})
-        
-        # Convert bits amount to integer
         bits_used = int(product.get("cost", {}).get("amount", 0))
         
         print(f"💰 Bits Amount Found: {bits_used}")
@@ -51,13 +49,14 @@ def handle_bits():
         if bits_used == 1:
             print("🔥 Triggering fire gif")
             socketio.emit('show_fire_gif', {'show': True})
+            # Simplified command sending
             send_command('!hello', {'user': user})
             return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
         elif bits_used == 50:
             print("🐨 Starting dropbear command flow")
             socketio.emit('show_dropbear_gif', {'show': True})
-            with app.app_context():  # Ensure Flask app context is active
-                send_command('dropbear', {'user': user})
+            # Simplified command sending
+            send_command('dropbear', {'user': user})
             print("🐨 Dropbear command completed")
             return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
         
@@ -68,4 +67,5 @@ def handle_bits():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port)
+
 
