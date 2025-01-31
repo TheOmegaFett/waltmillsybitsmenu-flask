@@ -5,7 +5,6 @@ import redis
 
 redis_client = redis.Redis.from_url('redis://red-cudsn6lds78s73dfsh0g:6379')
 
-
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -14,13 +13,16 @@ import os
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', logger=True, engineio_logger=True)
 
 @app.route('/overlay')
 def overlay():
     return render_template('overlay.html')
 
 # Add Redis health check endpoint
+
+if __name__ == "__main__":
+    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
 @app.route('/health')
 def health_check():
     try:
