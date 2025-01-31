@@ -15,30 +15,32 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 async def execute_dropbear_event(bot, channel, user):
-    """Direct method to trigger dropbear without command system"""
-    logger.info(f"🎯 Starting dropbear execution for user: {user}")
-    mock_ctx = type('Context', (), {
-        'send': channel.send,
-        'channel': channel,
-        'view': None,
-        'author': type('Author', (), {
-            'is_mod': True,
-            'is_broadcaster': True,
-            'name': user,
-            'display_name': user
-        })(),
-        'message': type('Message', (), {
-            'content': '!dropbear',
+    try:
+        logger.info(f"🎯 Starting dropbear execution for user: {user}")
+        mock_ctx = type('Context', (), {
+            'send': channel.send,
             'channel': channel,
+            'view': None,
             'author': type('Author', (), {
+                'is_mod': True,
+                'is_broadcaster': True,
                 'name': user,
                 'display_name': user
+            })(),
+            'message': type('Message', (), {
+                'content': '!dropbear',
+                'channel': channel,
+                'author': type('Author', (), {
+                    'name': user,
+                    'display_name': user
+                })()
             })()
-        })()
-    })
-    logger.info("🎯 Mock context created, executing dropbear")
-    await bot.dropbear(mock_ctx)
-    logger.info("🎯 Dropbear execution completed")
+        })
+        logger.info("🎯 Mock context created")
+        result = await bot.dropbear(mock_ctx)
+        logger.info(f"🎯 Dropbear execution result: {result}")
+    except Exception as e:
+        logger.error(f"🚫 Error in dropbear execution: {str(e)}", exc_info=True)
 
 async def listen_for_bits(bot, redis_client):
     try:
