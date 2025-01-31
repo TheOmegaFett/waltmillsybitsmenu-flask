@@ -43,7 +43,6 @@ class Bot(commands.Bot):
         redis_client = redis.Redis.from_url('redis://red-cudsn6lds78s73dfsh0g:6379', decode_responses=True)
         pubsub = redis_client.pubsub()
         pubsub.subscribe('bot_commands')
-        
         print("🔌 Redis listener started")
         
         while True:
