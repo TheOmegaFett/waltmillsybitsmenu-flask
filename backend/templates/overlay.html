@@ -44,11 +44,13 @@
         reconnectionDelay: 1000,
         reconnectionAttempts: 5,
       });
-
       const fireGif = document.getElementById("fire-gif");
       const dropbearGif = document.getElementById("dropbear-gif");
       const status = document.getElementById("status");
 
+      // Now we can hide them after they're defined
+      fireGif.style.display = "none";
+      dropbearGif.style.display = "none";
       socket.on("connect", () => {
         status.textContent = "Connected to server!";
       });
