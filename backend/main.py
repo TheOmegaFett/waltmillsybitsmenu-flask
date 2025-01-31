@@ -84,8 +84,9 @@ class Bot(commands.Bot):
 
         try:
             topics = [
-                pubsub.channel_points(os.getenv('TWITCH_TOKEN'))[os.getenv('CHANNEL_ID')]
-            ]
+    pubsub.channel_points(os.getenv('TWITCH_TOKEN'))[int(os.getenv('CHANNEL_ID'))]
+]
+
             await self._pubsub.subscribe_topics(topics)
             logger.info("Successfully subscribed to channel points")
         except Exception as e:

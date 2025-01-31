@@ -27,7 +27,6 @@ async def listen_for_bits(bot, redis_client):
                     user = data.get('data', {}).get('user')
                     logger.debug(f"Triggering dropbear for user: {user}")
                     await bot.dropbear(user)
-                    
             await asyncio.sleep(0.1)
     except Exception as e:
         logger.error(f"Redis connection error: {e}")
@@ -42,7 +41,7 @@ async def main():
     
     # Try Redis connection separately
     try:
-        redis_url = os.environ.get('REDIS_URL')
+        redis_url = os.environ.get('REDIS_URL', 'redis://red-cudsn6lds78s73dfsh0g:6379')
         if redis_url:
             redis_client = redis.from_url(redis_url)
             bits_task = listen_for_bits(bot, redis_client)
