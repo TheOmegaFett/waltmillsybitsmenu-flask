@@ -1,6 +1,16 @@
 import eventlet
 eventlet.monkey_patch()
 
+import redis
+
+redis_client = redis.Redis(
+    host='localhost',  # or your Redis host
+    port=6379,        # default Redis port
+    db=0              # default database
+)
+
+
+
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -15,14 +25,28 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 def overlay():
     return render_template('overlay.html')
 
+# Add Redis health check endpoint
+@app.route('/health')
+def health_check():
+    try:
+        redis_client.ping()
+        return jsonify({"status": "healthy", "redis": "connected"})
+    except Exception as e:
+        return jsonify({"status": "unhealthy", "error": str(e)})
+
+
 @app.route('/bits', methods=['POST'])
 def handle_bits():
+    print("Received bits request")
+    print(f"Request data: {request.get_data()}")
+    print(f"Request headers: {request.headers}")
+    
     data = request.json
     bits_used = data.get("bits_used", 0)
     user = data.get("user_name", "Unknown")
     sku = data.get("sku")
     
-    print(f"💰 Transaction attempt: User={user}, Bits={bits_used}, SKU={sku}")
+    print(f"💰 Processed data: User={user}, Bits={bits_used}, SKU={sku}")
 
     # Add explicit response handling
     if bits_used == 1:
@@ -39,3 +63,4 @@ def handle_bits():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port)
+
