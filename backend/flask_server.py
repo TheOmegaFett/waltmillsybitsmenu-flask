@@ -30,7 +30,6 @@ def health_check():
     except Exception as e:
         return jsonify({"status": "unhealthy", "error": str(e)})
 
-
 @app.route('/bits', methods=['POST'])
 def handle_bits():
     try:
@@ -40,16 +39,19 @@ def handle_bits():
         bits_used = int(product.get("cost", {}).get("amount", 0))
         
         if bits_used == 50:
-            def send_command_wrapper():
+            # Wrap the Redis publish in an eventlet greenthread
+            def command_wrapper():
                 send_command('dropbear', {'user': user})
+            eventlet.spawn(command_wrapper)
             
-            eventlet.spawn(send_command_wrapper)
+            # Emit WebSocket event
             socketio.emit('show_dropbear_gif', {'show': True})
-            return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
+            return jsonify({"status": "success"})
+            
+        return jsonify({"status": "error", "message": "Invalid bits amount"}), 400
         
-        return jsonify({"status": "error", "message": f"Invalid bits amount: {bits_used}"}), 400
     except Exception as e:
-        logger.error(f"Error processing bits: {str(e)}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
