@@ -33,6 +33,7 @@ async def listen_for_bits(bot, redis_client):
                     mock_ctx = type('Context', (), {
                         'send': channel.send,
                         'channel': channel,
+                        'view': None,  # Added back the view attribute
                         'author': type('Author', (), {
                             'is_mod': True,
                             'is_broadcaster': True,
