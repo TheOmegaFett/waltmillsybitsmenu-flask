@@ -26,34 +26,11 @@ async def listen_for_bits(bot, redis_client):
                 data = json.loads(message['data'])
                 logger.info(f"🎯 Received command: {data}")
                 
-                channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
-                if channel:
-                    logger.info(f"📢 Found channel: {channel.name}")
-                    # Create a more complete mock context that matches what dropbear expects
-                    mock_ctx = type('Context', (), {
-                        'send': channel.send,
-                        'channel': channel,
-                        'view': None,  # Added back the view attribute
-                        'author': type('Author', (), {
-                            'is_mod': True,
-                            'is_broadcaster': True,
-                            'name': data['data']['user'],
-                            'display_name': data['data']['user']
-                        })(),
-                        'message': type('Message', (), {
-                            'content': '!dropbear',
-                            'channel': channel,
-                            'author': type('Author', (), {
-                                'name': data['data']['user'],
-                                'display_name': data['data']['user']
-                            })()
-                        })()
-                    })
-                    
-                    if data['type'] == 'dropbear':
-                        channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
-                        if channel:
-                            await execute_dropbear_event(bot, channel, data['data']['user'])
+                if data['type'] == 'dropbear':
+                    channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
+                    if channel:
+                        logger.info(f"📢 Found channel: {channel.name}")
+                        await execute_dropbear_event(bot, channel, data['data']['user'])
                     
             await asyncio.sleep(0.1)
     except Exception as e:
