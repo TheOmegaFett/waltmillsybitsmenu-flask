@@ -18,7 +18,6 @@ async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
         
-        # Create a send method with logging
         async def send_message(content):
             logger.info(f"📨 Attempting to send chat message: {content}")
             try:
@@ -48,11 +47,12 @@ async def execute_dropbear_event(bot, channel, user):
         })
         
         logger.info("🎯 Mock context created")
-        await bot._execute_dropbear(mock_ctx)  # Call the internal method directly
+        await bot.dropbear(mock_ctx)  # Using the correct method name
         logger.info("🎯 Dropbear command executed successfully")
         
     except Exception as e:
         logger.error(f"🚫 Error: {str(e)}", exc_info=True)
+
 async def listen_for_bits(bot, redis_client):
     try:
         pubsub = redis_client.pubsub(ignore_subscribe_messages=True)
