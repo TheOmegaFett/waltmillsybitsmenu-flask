@@ -255,16 +255,12 @@ class Bot(commands.Bot):
         """
         Triggers a random Drop Bear event in chat. Moderator only command.
         """
-        # Check if user is moderator or broadcaster
-        if not ctx.author.is_mod and not ctx.author.is_broadcaster:
-            await ctx.send(f"Oi mate {ctx.author.name}, only the Drop Bear experts (mods) can trigger these deadly creatures!")
-            return
-
-        # Check if there's already an active drop bear event
-        if getattr(self, 'drop_bear_active', False):
-            await ctx.send("Strewth! There's already a drop bear on the loose!")
-            return
-
+        await self._execute_dropbear(ctx)
+        
+    async def _execute_dropbear(self, ctx):
+        """
+        Core dropbear functionality that can be called directly
+        """
         import random
 
         aussie_items = [
@@ -303,9 +299,8 @@ class Bot(commands.Bot):
             "train station pie warmer"
         ]
 
-        # Set the drop bear status to active
         self.drop_bear_active = True
-        print(f"Drop bear status: {self.drop_bear_active}")  # Log the status
+        print(f"Drop bear status: {self.drop_bear_active}")
 
         item = random.choice(aussie_items)
         location = random.choice(locations)
@@ -325,12 +320,8 @@ class Bot(commands.Bot):
 
         # Reset for next drop bear attack
         self.drop_bear_active = False
-        print(f"Drop bear status: {self.drop_bear_active}")  # Log the status
+        print(f"Drop bear status: {self.drop_bear_active}")
         self.protected_viewers = set()
-    
-    
-    @commands.command()
-    async def protect(self, ctx):
         """
         Lets viewers protect themselves from the Drop Bear
         """
