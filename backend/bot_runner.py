@@ -14,6 +14,29 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+async def execute_dropbear_event(bot, channel, user):
+    """Direct method to trigger dropbear without command system"""
+    mock_ctx = type('Context', (), {
+        'send': channel.send,
+        'channel': channel,
+        'view': None,
+        'author': type('Author', (), {
+            'is_mod': True,
+            'is_broadcaster': True,
+            'name': user,
+            'display_name': user
+        })(),
+        'message': type('Message', (), {
+            'content': '!dropbear',
+            'channel': channel,
+            'author': type('Author', (), {
+                'name': user,
+                'display_name': user
+            })()
+        })()
+    })
+    await bot.dropbear(mock_ctx)
+
 async def listen_for_bits(bot, redis_client):
     try:
         pubsub = redis_client.pubsub(ignore_subscribe_messages=True)
@@ -48,25 +71,3 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 
-async def execute_dropbear_event(bot, channel, user):
-    """Direct method to trigger dropbear without command system"""
-    mock_ctx = type('Context', (), {
-        'send': channel.send,
-        'channel': channel,
-        'view': None,
-        'author': type('Author', (), {
-            'is_mod': True,
-            'is_broadcaster': True,
-            'name': user,
-            'display_name': user
-        })(),
-        'message': type('Message', (), {
-            'content': '!dropbear',
-            'channel': channel,
-            'author': type('Author', (), {
-                'name': user,
-                'display_name': user
-            })()
-        })()
-    })
-    await bot.dropbear(mock_ctx)
