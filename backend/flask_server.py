@@ -33,18 +33,17 @@ def health_check():
 @app.route('/bits', methods=['POST'])
 def handle_bits():
     print("🔍 Incoming Twitch Transaction:")
-    print(f"Headers: {dict(request.headers)}")
     print(f"Raw Data: {request.get_data()}")
     
     try:
         data = request.json
-        # Extract data from Twitch transaction format
-        user = data.get("displayName", "Unknown")
+        # Map Twitch transaction format
+        user = data.get("displayName")
         product = data.get("product", {})
-        bits_used = product.get("cost", {}).get("amount", 0)
-        transaction_id = data.get("transactionId")
+        cost = product.get("cost", {})
+        bits_used = cost.get("amount", 0)
         
-        print(f"💰 Processed transaction: User={user}, Bits={bits_used}, ID={transaction_id}")
+        print(f"💰 Processed transaction: User={user}, Bits={bits_used}")
 
         if bits_used == 1:
             socketio.emit('show_fire_gif', {'show': True})
