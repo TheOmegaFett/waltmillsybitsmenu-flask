@@ -1,5 +1,6 @@
 import asyncio
 import re
+import redis
 from twitchio.ext import commands, pubsub
 from twitchio.ext.pubsub import PubSubPool
 import os
@@ -25,7 +26,7 @@ class Bot(commands.Bot):
     """
     def __init__(self):
         super().__init__(
-            token=os.getenv('BOT_TOKEN'),  # Bot token for chat
+            token=os.getenv('BOT_TOKEN'),
             client_id=os.getenv('CLIENT_ID'),
             nick=os.getenv('BOT_USERNAME'),
             prefix='!',
@@ -35,9 +36,25 @@ class Bot(commands.Bot):
         self._pubsub = PubSubPool(self)
         logger.info("Bot initialized with PubSub pool")
 
+    async def setup_redis_listener(self):
+        self.redis_task = asyncio.create_task(self._listen_to_redis())
 
-        
+    async def _listen_to_redis(self):
+        redis_client = redis.Redis(host='redis', port=6379, decode_responses=True)
+        pubsub = redis_client.pubsub()
+        pubsub.subscribe('bot_commands')
     
+        while True:
+            message = pubsub.get_message()
+            if message and message['type'] == 'message':
+                data = json.loads(message['data'])
+                if data['type'] == '!dropbear':
+                    # Create a mock context for the dropbear command
+                    channel = self.get_channel(os.getenv('TWITCH_CHANNEL'))
+                    mock_ctx = type('Context', (), {'send': channel.send, 'author': type('Author', (), {'is_mod': True, 'is_broadcaster': True})()})()
+                    await self.dropbear(mock_ctx)
+            await asyncio.sleep(0.1)
+
     def load_viewer_data(self):
         try:
             with open('viewer_data.json', 'r') as f:
@@ -52,7 +69,10 @@ class Bot(commands.Bot):
     async def event_ready(self):
         logger.info(f'Logged in as | {self.nick}')
         logger.info(f'Connected to channel | {os.getenv("TWITCH_CHANNEL")}')
-        
+    
+        channel = self.get_channel(os.getenv('TWITCH_CHANNEL'))
+        await channel.send("G'day legends! 🦘 Your friendly neighborhood bot is here, ready to throw some shrimps on the barbie and watch out for drop bears! Let's have a ripper of a stream!")
+
         try:
             topics = [
                 pubsub.channel_points(os.getenv('TWITCH_TOKEN'))[os.getenv('CHANNEL_ID')]
@@ -63,26 +83,18 @@ class Bot(commands.Bot):
             logger.error(f"PubSub connection failed: {str(e)}", exc_info=True)            
             return {}
 
+        # Add Redis listener setup
+        await self.setup_redis_listener()    
+
     def save_viewer_data(self):
         with open('viewer_data.json', 'w') as f:
             json.dump(self.viewer_data, f)
 
-        # Remove all other event_ready methods and keep only this one
-    async def event_ready(self):
-        logger.info(f'Logged in as | {self.nick}')
-        logger.info(f'Connected to channel | {os.getenv("TWITCH_CHANNEL")}')
-    
-        channel = self.get_channel(os.getenv('TWITCH_CHANNEL'))
-        await channel.send("G'day legends! 🦘 Your friendly neighborhood bot is here, ready to throw some shrimps on the barbie and watch out for drop bears! Let's have a ripper of a stream!")
-    
-        # Add Redis listener setup
-        await self.setup_redis_listener()    
-    
     def get_user_stats(self, username):
         """Get or create user stats"""
         if 'aussie_ranks' not in self.viewer_data:
             self.viewer_data['aussie_ranks'] = {}
-            
+        
         if username not in self.viewer_data['aussie_ranks']:
             self.viewer_data['aussie_ranks'][username] = {
                 "rank": "Fresh Off The Boat",
@@ -125,8 +137,8 @@ class Bot(commands.Bot):
         """Get current points for user"""
         stats = self.get_user_stats(username)
         return stats["points"]
-    
-    
+
+
     async def event_message(self, message):
         """
         Event handler that triggers on every chat message.
@@ -138,13 +150,13 @@ class Bot(commands.Bot):
         # Ignore messages sent by the bot itself
         if message.echo:
             return
-        
+    
         content = message.content.lower()
-        
+    
         # Track viewer activity
         viewer_name = message.author.name
         today = date.today().isoformat()
-        
+    
         if viewer_name not in self.viewer_data:
             self.viewer_data[viewer_name] = {
                 "last_seen": today,
@@ -162,9 +174,9 @@ class Bot(commands.Bot):
                     viewer_data["streak"] = 1
                 viewer_data["total_visits"] += 1
                 viewer_data["last_seen"] = today
-        
+    
         self.save_viewer_data()
-        
+    
         # Raid notifications
         if "just raided the channel with" in content:
             parts = message.content.split()
@@ -172,17 +184,17 @@ class Bot(commands.Bot):
             count = parts[6]
             await message.channel.send(f"Welcome raiders! Thank you {raider} for bringing {count} awesome people!")
             await message.channel.send(f"!so {raider}")
-        
+    
         # New subscriber
         if "just subscribed" in content:
             parts = message.content.split()
             username = parts[0]
             await message.channel.send(f"Welcome to the Walt Show {username}! Thank you for supporting the channel!")
-        
+    
         # Gifted subs
         if "gifted" in content and "subscription" in content:
             await message.channel.send(f"Thank you for gifting {message.author.name}!")
-        
+    
         # Bits cheered
         # Look for cheer pattern (word 'cheer' followed by number)
         cheer_match = re.search(r'cheer(\d+)', content)
@@ -194,15 +206,15 @@ class Bot(commands.Bot):
                 await message.channel.send(f"Wow! Thanks for the bitties {message.author.name}!")
             elif cheer_amount >= 0:
                 await message.channel.send(f"Thanks for the bits {message.author.name}!")
-                
+            
         # Follow alerts
         if "followed the channel" in content:
             await message.channel.send(f"Thanks for the follow! We appreciate you {message.author.name}!")
-            
+        
         # Host notifications
         if "now hosting" in content:
             await message.channel.send(f"Thanks for the host!")
-            
+        
         # Log all chat messages to console
         print(f"{message.author.name}: {message.content}")
         # Process any commands in the message
@@ -213,12 +225,12 @@ class Bot(commands.Bot):
         """
         Command handler for !hello command.
         Responds with a greeting to the user who triggered it.
-    
+
         Args:
             ctx: The context object containing information about the command invocation
         """
         await ctx.send(f'Hello {ctx.author.name}!')
-    
+
     @commands.command()
     async def streak(self, ctx):
         """Shows the viewer's current watch streak"""
@@ -228,7 +240,7 @@ class Bot(commands.Bot):
             await ctx.send(f"{viewer} has a {data['streak']} day streak! Total visits: {data['total_visits']}")
         else:
             await ctx.send(f"Welcome to your streaks first stream, {viewer}!")
-            
+        
     @commands.command()
     async def dropbear(self, ctx):
         """
@@ -306,8 +318,8 @@ class Bot(commands.Bot):
         self.drop_bear_active = False
         print(f"Drop bear status: {self.drop_bear_active}")  # Log the status
         self.protected_viewers = set()
-        
-        
+    
+    
     @commands.command()
     async def protect(self, ctx):
         """
@@ -325,27 +337,27 @@ class Bot(commands.Bot):
                     "vegemite_level": 0,
                     "achievements": []
                 })
-                
+            
                 stats["drop_bear_survivals"] += 1
                 stats["points"] += 5
-                
+            
                 # Check for achievements
                 if stats["drop_bear_survivals"] == 1:
                     stats["achievements"].append("Drop Bear Survivor")
                 elif stats["drop_bear_survivals"] >= 10:
                     stats["achievements"].append("Drop Bear Whisperer")
-                    
+                
                 self.viewer_data['aussie_ranks'][ctx.author.name] = stats
                 self.save_viewer_data()
-            
+        
             await ctx.send(f"{ctx.author.name} is safe as houses!")
-    
+
     @commands.command()
     async def dice(self, ctx):
         """
         Rolls a dice for fun channel interactions
         """
-         # Get everything after the command
+     # Get everything after the command
         message = ctx.message.content.split(' ', 1)[1] if len(ctx.message.content.split(' ', 1)) > 1 else ''
         if message.lower() == '':
             await ctx.send('Please specify a bet for either high, low or 7. ie. !dice high')
@@ -370,7 +382,7 @@ class Bot(commands.Bot):
                     await ctx.send(f"{ctx.author.name} wins! 🎉")
                 else:
                     await ctx.send(f"{ctx.author.name} loses! 💸")
-    
+
     @commands.command()
     async def weather(self, ctx):
         """
@@ -395,8 +407,8 @@ class Bot(commands.Bot):
                 "Bloody freezing | " if temp < 15 else
                 "She's a bit nippy | " if temp < 20 else
                 "Perfect for a barbie | " if temp < 25 else
-                "Strewth it's warm | " if temp < 30 else
-                "Fair dinkum it's a scorcher | "
+                "Strewth it's hot | " if temp < 30 else
+                "It's a scorcher | "
             )
 
             # Aussie slang weather conditions
@@ -421,7 +433,10 @@ class Bot(commands.Bot):
 
         except Exception as e:
             await ctx.send("Crikey! The weather report's gone walkabout! Try again later, mate!")
-            
+    
+        
+    
+
     @commands.command()
     async def fair_dinkum(self, ctx):
         """
@@ -558,21 +573,3 @@ async def start_bot():
     
     
 
-import redis
-
-# In the Bot class
-async def setup_redis_listener(self):
-    self.redis_task = asyncio.create_task(self._listen_to_redis())
-
-async def _listen_to_redis(self):
-    redis_client = redis.Redis(host='redis', port=6379, decode_responses=True)
-    pubsub = redis_client.pubsub()
-    pubsub.subscribe('bot_commands')
-    
-    while True:
-        message = pubsub.get_message()
-        if message and message['type'] == 'message':
-            data = json.loads(message['data'])
-            if data['type'] == '!dropbear':
-                await self.dropbear(None)
-        await asyncio.sleep(0.1)
