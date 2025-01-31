@@ -394,6 +394,7 @@ class Bot(commands.Bot):
         api_key = os.getenv('WEATHER_API_KEY')
         url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q=Sydney&aqi=no"
 
+
         try:
             response = requests.get(url)
             data = response.json()
