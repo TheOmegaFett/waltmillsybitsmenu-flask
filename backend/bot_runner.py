@@ -18,13 +18,17 @@ async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
         
-        # Create a send method that's properly bound to the channel
+        # Create a send method with logging
         async def send_message(content):
-            logger.info(f"📨 Sending message to chat: {content}")
-            await channel.send(content)
+            logger.info(f"📨 Attempting to send chat message: {content}")
+            try:
+                await channel.send(content)
+                logger.info("📨 Message sent successfully")
+            except Exception as e:
+                logger.error(f"📨 Failed to send message: {e}")
             
         mock_ctx = type('Context', (), {
-            'send': send_message,  # Use our new send method
+            'send': send_message,
             'channel': channel,
             'view': None,
             'author': type('Author', (), {
