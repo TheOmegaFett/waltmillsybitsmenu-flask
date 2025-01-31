@@ -46,10 +46,16 @@
 
       const container = document.getElementById("gif-container");
       const status = document.getElementById("status");
+      // Add a cleanup function
+      function clearContainer() {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+      }
 
       socket.on("show_fire_gif", (data) => {
+        clearContainer(); // More thorough cleanup
         status.textContent = "Fire GIF triggered!";
-        container.innerHTML = ""; // Clear container first
         const fireGif = document.createElement("img");
         fireGif.src =
           "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXE5b21wbWc1M2EyOXMxeTJtdDNpcWtjeTdnZDMzdTkwN3J5Z3k3cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lTkOQ1aacqClLCcBZq/giphy.gif";
@@ -58,11 +64,10 @@
         container.appendChild(fireGif);
 
         setTimeout(() => {
-          container.innerHTML = ""; // Clear container after timeout
+          clearContainer();
           status.textContent = "Waiting for bits...";
         }, 5000);
       });
-
       socket.on("show_dropbear_gif", (data) => {
         status.textContent = "Drop Bear Attack!";
         container.innerHTML = ""; // Clear container first

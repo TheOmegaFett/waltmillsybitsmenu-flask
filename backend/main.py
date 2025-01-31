@@ -566,8 +566,11 @@ async def setup_redis_listener(self):
     pubsub = redis_client.pubsub()
     pubsub.subscribe('bot_commands')
     
-    for message in pubsub.listen():
-        if message['type'] == 'message':
+    while True:  # Keep listening
+        message = pubsub.get_message()
+        if message and message['type'] == 'message':
             data = json.loads(message['data'])
-            if data['type'] == '!dropbear':
-                await self.dropbear(data['data']['user'])
+            command = data['type']
+            if command == '!dropbear':
+                await self.dropbear(None)  # Call the command directly
+        await asyncio.sleep(0.1)  # Prevent CPU overload
