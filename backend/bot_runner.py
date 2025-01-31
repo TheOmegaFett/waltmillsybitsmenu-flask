@@ -18,20 +18,26 @@ async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
         
+        # Create author with WebSocket connection from channel
+        author = type('Author', (), {
+            'name': user,
+            'display_name': user,
+            'is_mod': True,
+            'is_broadcaster': True,
+            '_ws': channel._ws,  # Add WebSocket from channel
+            'channel': channel   # Reference to channel
+        })
+        
         # Create message with complete TwitchIO attributes
         message = type('Message', (), {
             'content': '!dropbear',
             'channel': channel,
-            'author': type('Author', (), {
-                'name': user,
-                'display_name': user,
-                'is_mod': True,
-                'is_broadcaster': True
-            }),
-            'tags': {},  # Required for prefix checking
+            'author': author,    # Use our enhanced author
+            'tags': {},
             'echo': False,
             'raw_data': None,
-            'timestamp': None
+            'timestamp': None,
+            '_ws': channel._ws   # Add WebSocket from channel
         })
         
         ctx = await bot.get_context(message)
