@@ -42,17 +42,8 @@ def handle_bits():
         user = data.get("displayName")
         product = data.get("product", {})
         
-        # Detailed logging of the product structure
-        print(f"👤 User: {user}")
-        print(f"📦 Full Product Object: {product}")
-        
-        # Try different paths to find bits amount
-        bits_used = (
-            product.get("cost", {}).get("amount") or
-            product.get("bits") or
-            product.get("amount") or
-            0
-        )
+        # Convert bits amount to integer
+        bits_used = int(product.get("cost", {}).get("amount", 0))
         
         print(f"💰 Bits Amount Found: {bits_used}")
 
