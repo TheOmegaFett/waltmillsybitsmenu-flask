@@ -38,14 +38,14 @@ class Bot(commands.Bot):
 
     async def setup_redis_listener(self):
         self.redis_task = asyncio.create_task(self._listen_to_redis())
-
+    
     async def _listen_to_redis(self):
-        redis_client = redis.Redis(host='redis', port=6379, decode_responses=True)
+        redis_client = redis.Redis.from_url('redis://red-cudsn6lds78s73dfsh0g:6379', decode_responses=True)
         pubsub = redis_client.pubsub()
         pubsub.subscribe('bot_commands')
-    
+        
         print("🔌 Redis listener started")
-    
+        
         while True:
             message = pubsub.get_message()
             if message and message['type'] == 'message':
@@ -481,19 +481,6 @@ class Bot(commands.Bot):
                     f"Rank: {stats['rank']} | Drop Bear Survivals: {stats['drop_bear_survivals']} | Vegemite Level: {stats['vegemite_level']}/10 | Achievements: {', '.join(stats['achievements']) if stats['achievements'] else 'None yet, mate!'}")
         
         self.save_viewer_data()
-
-    # @commands.command()
-    # async def raid(self, ctx):
-    #     """
-    #     Command handler for !raid command.
-    #     Responds with a raiding message to the channel. Only works for user WaltMillsy.
-    #     Args:
-    #         ctx: The context object containing information about the command invocation
-    #     """
-    #     if ctx.author.name.lower() == 'theomegafett':
-    #         await ctx.send('WaltMillsy is raiding! Use msg WaltMiRAID2 waltmiRAID2 waltmiHYPE')
-    #     else:
-    #         print(f"Raid command denied for user: {ctx.author.name}")
 
 
 

@@ -5,6 +5,8 @@ import json
 import os
 from main import Bot
 
+redis_client = redis.Redis(host='redis', port=6379, decode_responses=True)
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -27,7 +29,6 @@ async def listen_for_bits(bot, redis_client):
                     user = data.get('data', {}).get('user')
                     logger.debug(f"Triggering dropbear for user: {user}")
                     await bot.dropbear(user)
-                    
             await asyncio.sleep(0.1)
     except Exception as e:
         logger.error(f"Redis connection error: {e}")
@@ -37,23 +38,9 @@ async def main():
     bot = Bot()
     bot.loop = loop
     
-    # Start the bot first
     bot_task = bot.start()
-    
-    # Try Redis connection separately
-    try:
-        redis_url = os.environ.get('REDIS_URL', 'redis://red-cudsn6lds78s73dfsh0g:6379')
-        if redis_url:
-            redis_client = redis.from_url(redis_url)
-            bits_task = listen_for_bits(bot, redis_client)
-            await asyncio.gather(bot_task, bits_task)
-        else:
-            logger.warning("No Redis URL found - running bot without bits integration")
-            await bot_task
-    except Exception as e:
-        logger.error(f"Redis error: {e}")
-        # Keep bot running even if Redis fails
-        await bot_task
+    bits_task = listen_for_bits(bot, redis_client)
+    await asyncio.gather(bot_task, bits_task)
 
 if __name__ == "__main__":
     asyncio.run(main())
