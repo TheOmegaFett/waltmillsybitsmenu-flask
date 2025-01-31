@@ -52,7 +52,7 @@ async def listen_for_bits(bot, redis_client):
                     
                     if data['type'] == 'dropbear':
                         logger.info("🐨 Executing dropbear command")
-                        await bot._execute_dropbear(mock_ctx)  # Call the direct method
+                        await bot.dropbear(mock_ctx)  # Call the original method directly
                         logger.info("🐨 Dropbear command completed")
                     
             await asyncio.sleep(0.1)
