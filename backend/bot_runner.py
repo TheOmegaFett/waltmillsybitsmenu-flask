@@ -18,37 +18,37 @@ async def execute_dropbear_event(bot, channel, user):
     try:
         logger.info(f"🎯 Starting dropbear execution for user: {user}")
         
-        async def send_message(content):
-            logger.info(f"📨 Attempting to send chat message: {content}")
-            try:
-                result = await channel.send(content)
-                logger.info(f"📨 Message sent successfully: {content}")
-                return result
-            except Exception as e:
-                logger.error(f"📨 Failed to send message: {e}")
-                raise
-            
+        # Create a more complete mock context
         mock_ctx = type('Context', (), {
-            'send': send_message,
+            'send': channel.send,
             'channel': channel,
             'view': None,
+            'command': type('Command', (), {
+                'name': 'dropbear',
+                'aliases': [],
+                'callback': bot.dropbear
+            })(),
             'author': type('Author', (), {
                 'is_mod': True,
                 'is_broadcaster': True,
                 'name': user,
-                'display_name': user
+                'display_name': user,
+                'channel': channel
             })(),
             'message': type('Message', (), {
                 'content': '!dropbear',
                 'channel': channel,
+                'echo': False,
+                'raw_data': None,
                 'author': type('Author', (), {
                     'name': user,
-                    'display_name': user
+                    'display_name': user,
+                    'channel': channel
                 })()
             })()
         })
         
-        logger.info("🎯 Mock context created")
+        logger.info("🎯 Mock context created with full command attributes")
         logger.info("🎯 Executing dropbear command...")
         await bot.dropbear(mock_ctx)
         logger.info("🎯 Dropbear command completed")
