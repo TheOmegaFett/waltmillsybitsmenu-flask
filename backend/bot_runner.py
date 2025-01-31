@@ -21,10 +21,12 @@ async def execute_dropbear_event(bot, channel, user):
         async def send_message(content):
             logger.info(f"📨 Attempting to send chat message: {content}")
             try:
-                await channel.send(content)
-                logger.info("📨 Message sent successfully")
+                result = await channel.send(content)
+                logger.info(f"📨 Message sent successfully: {content}")
+                return result
             except Exception as e:
                 logger.error(f"📨 Failed to send message: {e}")
+                raise
             
         mock_ctx = type('Context', (), {
             'send': send_message,
@@ -47,11 +49,12 @@ async def execute_dropbear_event(bot, channel, user):
         })
         
         logger.info("🎯 Mock context created")
-        await bot.dropbear(mock_ctx)  # Using the correct method name
-        logger.info("🎯 Dropbear command executed successfully")
+        logger.info("🎯 Executing dropbear command...")
+        await bot.dropbear(mock_ctx)
+        logger.info("🎯 Dropbear command completed")
         
     except Exception as e:
-        logger.error(f"🚫 Error: {str(e)}", exc_info=True)
+        logger.error(f"🚫 Error in dropbear execution: {str(e)}", exc_info=True)
 
 async def listen_for_bits(bot, redis_client):
     try:
