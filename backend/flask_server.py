@@ -32,20 +32,24 @@ def health_check():
 
 @app.route('/bits', methods=['POST'])
 def handle_bits():
-    print("🔍 Incoming Twitch Transaction:")
-    print(f"Raw Data: {request.get_data(as_text=True)}")
+    print("🔍 DEBUG: Full Transaction Data")
+    print(f"Complete request data: {request.get_data(as_text=True)}")
     
     try:
         data = request.json
         user = data.get("displayName")
-        product = data.get("product", {})
+        product = data.get("product")
         
-        print(f"� Product data: {product}")
+        print(f"📦 Full Product Object: {product}")
         print(f"👤 User: {user}")
         
+        # Let's log every field to see the exact structure
+        for key, value in data.items():
+            print(f"🔑 {key}: {value}")
+
         if product:
             bits_used = product.get("cost", {}).get("amount", 0)
-            print(f"💰 Bits used: {bits_used}")
+            print(f"💰 Bits Amount Found: {bits_used}")
 
             if bits_used == 1:
                 socketio.emit('show_fire_gif', {'show': True})
