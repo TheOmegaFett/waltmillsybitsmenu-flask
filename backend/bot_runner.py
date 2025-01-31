@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 async def execute_dropbear_event(bot, channel, user):
     """Direct method to trigger dropbear without command system"""
+    logger.info(f"🎯 Starting dropbear execution for user: {user}")
     mock_ctx = type('Context', (), {
         'send': channel.send,
         'channel': channel,
@@ -35,7 +36,9 @@ async def execute_dropbear_event(bot, channel, user):
             })()
         })()
     })
+    logger.info("🎯 Mock context created, executing dropbear")
     await bot.dropbear(mock_ctx)
+    logger.info("🎯 Dropbear execution completed")
 
 async def listen_for_bits(bot, redis_client):
     try:

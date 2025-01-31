@@ -249,18 +249,13 @@ class Bot(commands.Bot):
             await ctx.send(f"{viewer} has a {data['streak']} day streak! Total visits: {data['total_visits']}")
         else:
             await ctx.send(f"Welcome to your streaks first stream, {viewer}!")
-        
     @commands.command()
     async def dropbear(self, ctx):
         """
         Triggers a random Drop Bear event in chat. Moderator only command.
         """
-        await self._execute_dropbear(ctx)
-        
-    async def _execute_dropbear(self, ctx):
-        """
-        Core dropbear functionality that can be called directly
-        """
+        logger.info(f"Starting dropbear command for {ctx.author.name}")
+
         import random
 
         aussie_items = [
@@ -279,6 +274,7 @@ class Bot(commands.Bot):
             "Weet-Bix war hammer",
             "Paddle Pop sword"
         ]
+        logger.info("Items list loaded")
 
         locations = [
             "gum tree",
@@ -298,30 +294,39 @@ class Bot(commands.Bot):
             "Centrelink queue",
             "train station pie warmer"
         ]
+        logger.info("Locations list loaded")
 
         self.drop_bear_active = True
-        print(f"Drop bear status: {self.drop_bear_active}")
+        logger.info(f"Drop bear status set to: {self.drop_bear_active}")
 
         item = random.choice(aussie_items)
         location = random.choice(locations)
+        logger.info(f"Selected item: {item}, location: {location}")
 
         await ctx.send(f"🐨 STREWTH! Drop Bear spotted near the {location}! Quick, type !protect to use your {item}!")
+        logger.info("Initial dropbear message sent")
 
         # Give chat 15 seconds to protect themselves
         import asyncio
+        logger.info("Starting 15 second timer")
         await asyncio.sleep(15)
+        logger.info("Timer completed")
 
         # Check who survived
         survivors = getattr(self, 'protected_viewers', set())
+        logger.info(f"Found survivors: {survivors}")
+
         if survivors:
             await ctx.send(f"Fair dinkum! {', '.join(survivors)} survived the Drop Bear attack!")
         else:
             await ctx.send("Crikey! The Drop Bear got everyone!")
+        logger.info("Final survival message sent")
 
         # Reset for next drop bear attack
         self.drop_bear_active = False
-        print(f"Drop bear status: {self.drop_bear_active}")
         self.protected_viewers = set()
+        logger.info("Drop bear reset complete")
+
         """
         Lets viewers protect themselves from the Drop Bear
         """
@@ -349,7 +354,7 @@ class Bot(commands.Bot):
                 
                 self.viewer_data['aussie_ranks'][ctx.author.name] = stats
                 self.save_viewer_data()
-        
+
             await ctx.send(f"{ctx.author.name} is safe as houses!")
 
     @commands.command()
