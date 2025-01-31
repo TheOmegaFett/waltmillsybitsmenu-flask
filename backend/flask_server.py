@@ -4,11 +4,10 @@ eventlet.monkey_patch()
 import redis
 
 redis_client = redis.Redis(
-    host='localhost',  # or your Redis host
-    port=6379,        # default Redis port
-    db=0              # default database
+    host='red-cg2hh0kg1b2c73b2p8p0',  # Your Render Redis host
+    port=6379,
+    db=0
 )
-
 
 
 from flask import Flask, render_template, request, jsonify
