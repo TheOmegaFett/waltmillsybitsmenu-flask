@@ -42,18 +42,20 @@ def handle_bits():
     
     print(f"💰 Processed data: User={user}, Bits={bits_used}, SKU={sku}")
 
-    # Add explicit response handling
     if bits_used == 1:
         socketio.emit('show_fire_gif', {'show': True})
-        send_command('!hello', {'user': user})
+        send_command('hello', {'user': user})
         return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
     elif bits_used == 50:
+        print("🐨 Starting dropbear command flow")
+        print(f"🐨 Emitting dropbear gif for user: {user}")
         socketio.emit('show_dropbear_gif', {'show': True})
+        print("🐨 Sending dropbear command to Redis")
         send_command('dropbear', {'user': user})
+        print("🐨 Dropbear command sent successfully")
         return jsonify({"status": "success", "message": f"{user} spent {bits_used} Bits!"})
     
     return jsonify({"status": "error", "message": "Invalid bits amount"}), 400
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port)
