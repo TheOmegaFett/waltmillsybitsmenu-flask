@@ -2,9 +2,8 @@ import redis
 import json
 import os
 
-# Connect to Redis using internal Render network
 redis_client = redis.Redis(
-    host='redis',  # Internal Render service name
+    host='redis',  
     port=6379,
     decode_responses=True
 )
