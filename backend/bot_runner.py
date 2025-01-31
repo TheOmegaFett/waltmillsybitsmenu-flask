@@ -37,10 +37,13 @@ async def execute_dropbear_event(bot, channel, user):
             })()
         })
         logger.info("🎯 Mock context created")
-        result = await bot.dropbear(mock_ctx)
-        logger.info(f"🎯 Dropbear execution result: {result}")
+        try:
+            await bot.dropbear(mock_ctx)
+            logger.info("🎯 Dropbear command executed successfully")
+        except Exception as e:
+            logger.error(f"🚫 Error in dropbear command: {str(e)}", exc_info=True)
     except Exception as e:
-        logger.error(f"🚫 Error in dropbear execution: {str(e)}", exc_info=True)
+        logger.error(f"🚫 Error in context creation: {str(e)}", exc_info=True)
 
 async def listen_for_bits(bot, redis_client):
     try:
