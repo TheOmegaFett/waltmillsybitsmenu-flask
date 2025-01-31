@@ -19,6 +19,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+
 class Bot(commands.Bot):
     """
     A Twitch bot that handles chat commands and events.
