@@ -326,36 +326,32 @@ class Bot(commands.Bot):
             logger.error(f"❌ Failed to send results: {e}")
 
         self.drop_bear_active = False
-        self.protected_viewers = set()
-        logger.info("🔄 Drop bear reset complete")
-        """
-        Lets viewers protect themselves from the Drop Bear
-        """
+    @commands.command(name='protect')
+    async def protect(self, ctx):
+        """Lets viewers protect themselves from the Drop Bear"""
         if getattr(self, 'drop_bear_active', False):
             self.protected_viewers = getattr(self, 'protected_viewers', set())
             self.protected_viewers.add(ctx.author.name)
-            # Update their stats
-            if 'aussie_ranks' in self.viewer_data:
-                stats = self.viewer_data['aussie_ranks'].get(ctx.author.name, {
-                    "rank": "Fresh Off The Boat",
-                    "points": 0,
-                    "drop_bear_survivals": 0,
-                    "vegemite_level": 0,
-                    "achievements": []
-                })
-            
-                stats["drop_bear_survivals"] += 1
-                stats["points"] += 5
-            
-                # Check for achievements
-                if stats["drop_bear_survivals"] == 1:
-                    stats["achievements"].append("Drop Bear Survivor")
-                elif stats["drop_bear_survivals"] >= 10:
-                    stats["achievements"].append("Drop Bear Whisperer")
-                
-                self.viewer_data['aussie_ranks'][ctx.author.name] = stats
-                self.save_viewer_data()
-
+        
+            stats = self.viewer_data['aussie_ranks'].get(ctx.author.name, {
+                "rank": "Fresh Off The Boat",
+                "points": 0,
+                "drop_bear_survivals": 0,
+                "vegemite_level": 0,
+                "achievements": []
+            })
+        
+            stats["drop_bear_survivals"] += 1
+            stats["points"] += 5
+        
+            if stats["drop_bear_survivals"] == 1:
+                stats["achievements"].append("Drop Bear Survivor")
+            elif stats["drop_bear_survivals"] >= 10:
+                stats["achievements"].append("Drop Bear Whisperer")
+        
+            self.viewer_data['aussie_ranks'][ctx.author.name] = stats
+            self.save_viewer_data()
+        
             await ctx.send(f"{ctx.author.name} is safe as houses!")
 
     @commands.command()
