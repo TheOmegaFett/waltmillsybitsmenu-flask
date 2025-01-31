@@ -24,7 +24,7 @@ async def execute_dropbear_event(bot, channel, user):
             'display_name': user,
             'is_mod': True,
             'is_broadcaster': True,
-            '_ws': bot._ws  # Add WebSocket connection from bot
+            '_ws': channel._ws  # Use channel's WebSocket connection
         })
         
         # Create message with all required attributes
@@ -36,7 +36,7 @@ async def execute_dropbear_event(bot, channel, user):
             'echo': False,
             'raw_data': None,
             'timestamp': None,
-            '_ws': bot._ws  # Add WebSocket connection here too
+            '_ws': channel._ws  # Use channel's WebSocket connection
         })
         
         ctx = await bot.get_context(message)
