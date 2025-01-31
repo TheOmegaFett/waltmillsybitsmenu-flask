@@ -28,24 +28,31 @@ async def listen_for_bits(bot, redis_client):
                 
                 channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
                 if channel:
-                    logger.info(f"📢 Executing command in channel: {channel.name}")
+                    logger.info(f"📢 Found channel: {channel.name}")
+                    # Create a more complete mock context that matches what dropbear expects
                     mock_ctx = type('Context', (), {
                         'send': channel.send,
+                        'channel': channel,
                         'author': type('Author', (), {
                             'is_mod': True,
                             'is_broadcaster': True,
-                            'name': data['data']['user']
+                            'name': data['data']['user'],
+                            'display_name': data['data']['user']
                         })(),
-                        'view': None,
                         'message': type('Message', (), {
-                            'content': '',
-                            'channel': channel
+                            'content': '!dropbear',
+                            'channel': channel,
+                            'author': type('Author', (), {
+                                'name': data['data']['user'],
+                                'display_name': data['data']['user']
+                            })()
                         })()
-                    })()
+                    })
                     
                     if data['type'] == 'dropbear':
+                        logger.info("🐨 Executing dropbear command")
                         await bot.dropbear(mock_ctx)
-                        logger.info("🐨 Dropbear command executed successfully")
+                        logger.info("🐨 Dropbear command completed")
                     
             await asyncio.sleep(0.1)
     except Exception as e:
