@@ -24,29 +24,28 @@ async def listen_for_bits(bot, redis_client):
             message = pubsub.get_message()
             if message and message['type'] == 'message':
                 data = json.loads(message['data'])
-                logger.debug(f"Received bits command: {data}")
+                logger.debug(f"Bot received command: {data}")
                 
-                if data.get('type') == 'dropbear':
-                    channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
-                    if channel:
-                        logger.debug(f"Found channel: {channel.name}")
-                        mock_ctx = type('Context', (), {
-                            'send': channel.send,
-                            'author': type('Author', (), {
-                                'is_mod': True,
-                                'is_broadcaster': True,
-                                'name': data['data']['user']
-                            })(),
-                            'view': None
-                        })()
+                channel = bot.get_channel(os.getenv('TWITCH_CHANNEL'))
+                if channel:
+                    mock_ctx = type('Context', (), {
+                        'send': channel.send,
+                        'author': type('Author', (), {
+                            'is_mod': True,
+                            'is_broadcaster': True,
+                            'name': data['data']['user']
+                        })(),
+                        'view': None,
+                        'message': type('Message', (), {'content': ''})()
+                    })()
+                    
+                    if data['type'] == 'dropbear':
+                        logger.debug(f"Executing dropbear command for {data['data']['user']}")
                         await bot.dropbear(mock_ctx)
-                        logger.debug("Dropbear command executed")
-                    else:
-                        logger.error("Channel not found")
                     
             await asyncio.sleep(0.1)
     except Exception as e:
-        logger.error(f"Redis connection error: {e}")
+        logger.error(f"Redis connection error: {e}", exc_info=True)
 
 async def main():
     loop = asyncio.get_event_loop()
