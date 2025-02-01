@@ -34,15 +34,14 @@ def health_check():
 def handle_bits():
     try:
         data = request.json
-        print(f"[DEBUG] Bits endpoint hit with data: {data}")  # Track incoming requests
+        print(f"[DEBUG] Bits endpoint hit with data: {data}")
         user = data.get("displayName")
         product = data.get("product", {})
         bits_used = int(product.get("cost", {}).get("amount", 0))
         
         if bits_used == 50:
-            print(f"[DEBUG] Processing 50 bits for user: {user}")  # Track 50 bits processing
-            # Only send the command, let the command handler manage the socket emit
-            send_command('dropbear', {'user': user})
+            # Use eventlet.spawn to handle the Redis publish in a non-blocking way
+            eventlet.spawn(send_command, 'dropbear', {'user': user})
             return jsonify({"status": "success"})
             
         elif bits_used == 1:

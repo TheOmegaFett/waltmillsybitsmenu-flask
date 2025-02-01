@@ -1,3 +1,4 @@
+import eventlet
 import redis
 import json
 import os
@@ -10,4 +11,6 @@ def send_command(command_type, data):
         'type': command_type,
         'data': data
     }
-    redis_client.publish('bot_commands', json.dumps(message))
+    # Ensure Redis publish is wrapped in an eventlet-friendly way
+    with eventlet.Timeout(5, False):  # 5 second timeout
+        redis_client.publish('bot_commands', json.dumps(message))
