@@ -34,16 +34,15 @@ def health_check():
 def handle_bits():
     try:
         data = request.json
+        print(f"[DEBUG] Bits endpoint hit with data: {data}")  # Track incoming requests
         user = data.get("displayName")
         product = data.get("product", {})
         bits_used = int(product.get("cost", {}).get("amount", 0))
         
         if bits_used == 50:
-            # Use a single eventlet spawn for both operations
-            def command_wrapper():
-                send_command('dropbear', {'user': user})
-                socketio.emit('show_dropbear_gif', {'show': True})
-            eventlet.spawn(command_wrapper)
+            print(f"[DEBUG] Processing 50 bits for user: {user}")  # Track 50 bits processing
+            # Only send the command, let the command handler manage the socket emit
+            send_command('dropbear', {'user': user})
             return jsonify({"status": "success"})
             
         elif bits_used == 1:
@@ -54,6 +53,5 @@ def handle_bits():
         
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
