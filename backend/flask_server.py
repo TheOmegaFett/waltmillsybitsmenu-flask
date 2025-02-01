@@ -44,14 +44,18 @@ def handle_bits():
                 send_command('dropbear', {'user': user})
             eventlet.spawn(command_wrapper)
             
-            # Emit WebSocket event
+            # Emit WebSocket event for dropbear
             socketio.emit('show_dropbear_gif', {'show': True})
+            return jsonify({"status": "success"})
+            
+        elif bits_used == 1:
+            # Emit WebSocket event for fire gif
+            socketio.emit('show_fire_gif', {'show': True})
             return jsonify({"status": "success"})
             
         return jsonify({"status": "error", "message": "Invalid bits amount"}), 400
         
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
