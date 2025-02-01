@@ -1,7 +1,7 @@
-from asyncio.log import logger
 import eventlet
-eventlet.monkey_patch()
+eventlet.monkey_patch(os=False)  # Don't patch os operations
 
+from asyncio.log import logger
 import redis
 from redis.exceptions import ConnectionError
 
@@ -52,5 +52,11 @@ def handle_bits():
         
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, 
+                host="0.0.0.0", 
+                port=port,
+                log_output=True,
+                use_reloader=False)  # Disable reloader in production
