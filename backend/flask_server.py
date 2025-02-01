@@ -39,17 +39,14 @@ def handle_bits():
         bits_used = int(product.get("cost", {}).get("amount", 0))
         
         if bits_used == 50:
-            # Wrap the Redis publish in an eventlet greenthread
+            # Use a single eventlet spawn for both operations
             def command_wrapper():
                 send_command('dropbear', {'user': user})
+                socketio.emit('show_dropbear_gif', {'show': True})
             eventlet.spawn(command_wrapper)
-            
-            # Emit WebSocket event for dropbear
-            socketio.emit('show_dropbear_gif', {'show': True})
             return jsonify({"status": "success"})
             
         elif bits_used == 1:
-            # Emit WebSocket event for fire gif
             socketio.emit('show_fire_gif', {'show': True})
             return jsonify({"status": "success"})
             
@@ -57,5 +54,6 @@ def handle_bits():
         
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
