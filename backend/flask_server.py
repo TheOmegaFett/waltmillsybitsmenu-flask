@@ -38,32 +38,22 @@ def health_check():
         return jsonify({"status": "healthy", "redis": "connected"})
     except Exception as e:
         return jsonify({"status": "unhealthy", "error": str(e)})
-
 # Add this function to process queued gifs
 def process_gif_queue(queue_key, duration_ms):
     while True:
         try:
             queued_item = redis_client.lindex(queue_key, 0)
             if queued_item:
+                print(f"[DEBUG] Starting to process gif from {queue_key}")
                 gif_data = json.loads(queued_item)
-                
-                # Add debug logging
-                print(f"[DEBUG] Processing gif: {gif_data['event']}")
-                
-                # Force sync emit to ensure delivery
-                socketio.emit(gif_data['event'], {'show': True}, namespace='/')
-                
-                # Wait for gif duration
+                print(f"[DEBUG] Emitting show event for {gif_data['event']}")
+                socketio.emit(gif_data['event'], {'show': True})
+                print(f"[DEBUG] Waiting {duration_ms}ms for gif display")
                 eventlet.sleep(duration_ms / 1000.0)
-                
-                # Remove from queue and hide
                 redis_client.lpop(queue_key)
-                socketio.emit(gif_data['event'], {'show': False}, namespace='/')
-                
-                print(f"[DEBUG] Completed gif: {gif_data['event']}")
-            
+                print(f"[DEBUG] Gif processed and removed from queue")
+                socketio.emit(gif_data['event'], {'show': False})
             eventlet.sleep(0.1)
-            
         except Exception as e:
             print(f"[ERROR] Queue processor error: {str(e)}")
             eventlet.sleep(1)
