@@ -47,92 +47,46 @@
   </head>
   <body>
     <div id="status">Waiting for bits...</div>
-    <div id="gif-container"></div>
+    <div id="gif-container">
+      <img
+        id="fire-gif"
+        src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjUzbTc0czg2MjJwOXFzeWtjZXBhMW5nMW16OHZjenV2cnh1NnhqNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3JDnePt8MlFnFApq/giphy.gif"
+        alt="Fire GIF"
+      />
+      <img
+        id="dropbear-gif"
+        src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2RwazRsNGE5bGlya2sxMG1td3BocGx5em5qZnY0cWc5azB2b2NrdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3PY0WDYUnpAXLckm1d/giphy.gif"
+        alt="Dropbear GIF"
+      />
+    </div>
     <script>
-      const socket = io("https://waltmillsybitsmenu-flask.onrender.com", {
-        transports: ["websocket", "polling"],
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
-      });
+      const socket = io();
 
-      const container = document.getElementById("gif-container");
-      const status = document.getElementById("status");
-      let isPlaying = false;
-
-      socket.on("show_fire_gif", (data) => {
-        console.log("Received fire gif event:", data); // Add this line
-        if (isPlaying) return;
-        isPlaying = true;
-        status.textContent = "Fire GIF triggered!";
-        clearContainer();
-
-        socket.on("show_dropbear_gif", (data) => {
-          if (isPlaying) return;
-          isPlaying = true;
-          status.textContent = "Drop Bear Attack!";
-          clearContainer();
-
-          const dropbearGif = document.createElement("img");
-          dropbearGif.src =
-            "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2RwazRsNGE5bGlya2sxMG1td3BocGx5em5qZnY0cWc5azB2b2NrdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3PY0WDYUnpAXLckm1d/giphy.gif";
-          dropbearGif.style.width = "100%";
-          dropbearGif.style.maxWidth = "500px";
-          // Add the growth animation class
-          dropbearGif.classList.add("grow-animation");
-          container.appendChild(dropbearGif);
-
-          setTimeout(() => {
-            clearContainer();
-            status.textContent = "Waiting for bits...";
-            isPlaying = false;
-          }, 5000);
-        });
-        const fireGif = document.createElement("img");
-        fireGif.src =
-          "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExdjUzbTc0czg2MjJwOXFzeWtjZXBhMW5nMW16OHZjenV2cnh1NnhqNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3JDnePt8MlFnFApq/giphy.gif"; /* "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXE5b21wbWc1M2EyOXMxeTJtdDNpcWtjeTdnZDMzdTkwN3J5Z3k3cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lTkOQ1aacqClLCcBZq/giphy.gif"; */
-        fireGif.style.width = "100%";
-        fireGif.style.maxWidth = "500px";
-        container.appendChild(fireGif);
-
-        setTimeout(() => {
-          clearContainer();
-          status.textContent = "Waiting for bits...";
-          isPlaying = false;
-        }, 5000);
-      });
-      socket.on("show_dropbear_gif", (data) => {
-        if (isPlaying) return;
-        isPlaying = true;
-        status.textContent = "Drop Bear Attack!";
-        clearContainer();
-
-        const dropbearGif = document.createElement("img");
-        dropbearGif.src =
-          "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2RwazRsNGE5bGlya2sxMG1td3BocGx5em5qZnY0cWc5azB2b2NrdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/3PY0WDYUnpAXLckm1d/giphy.gif"; /*"https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHM2Y2ZvenllMzlmamxrZGIyc3kwcWhsOW1lZHA4cDZ6ZHA5OGtubCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0Exl5jVNZPXUH77G/giphy.gif";*/
-        dropbearGif.style.width = "100%";
-        dropbearGif.style.maxWidth = "500px";
-        container.appendChild(dropbearGif);
-
-        setTimeout(() => {
-          clearContainer();
-          status.textContent = "Waiting for bits...";
-          isPlaying = false;
-        }, 5000);
-      });
-
-      function clearContainer() {
-        while (container.firstChild) {
-          container.removeChild(container.firstChild);
-        }
-      }
-
+      // Debug logging for connection events
       socket.on("connect", () => {
         console.log("WebSocket connected");
       });
 
-      socket.on("connect_error", (error) => {
-        console.log("WebSocket connection error:", error);
+      // Handle dropbear gif
+      socket.on("show_dropbear_gif", (data) => {
+        console.log("Received dropbear event:", data);
+        const dropbearGif = document.getElementById("dropbear-gif");
+        if (data.show) {
+          dropbearGif.style.display = "block";
+        } else {
+          dropbearGif.style.display = "none";
+        }
+      });
+
+      // Handle fire gif
+      socket.on("show_fire_gif", (data) => {
+        console.log("Received fire event:", data);
+        const fireGif = document.getElementById("fire-gif");
+        if (data.show) {
+          fireGif.style.display = "block";
+        } else {
+          fireGif.style.display = "none";
+        }
       });
     </script>
   </body>
