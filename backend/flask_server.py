@@ -4,6 +4,9 @@ eventlet.monkey_patch(os=False)  # Don't patch os operations
 from asyncio.log import logger
 import redis
 from redis.exceptions import ConnectionError
+from collections import deque
+import json
+import time
 
 redis_client = redis.Redis.from_url('redis://red-cudsn6lds78s73dfsh0g:6379', decode_responses=True)
 
@@ -12,6 +15,12 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from message_handler import send_command
 import os
+
+# Add these constants at the top of the file
+QUEUE_KEY_DROPBEAR = 'gif_queue_dropbear'
+QUEUE_KEY_FIRE = 'gif_queue_fire'
+GIF_DURATION_DROPBEAR = 3000  # Duration in ms
+GIF_DURATION_FIRE = 2000  # Duration in ms
 
 app = Flask(__name__)
 CORS(app)
@@ -30,13 +39,41 @@ def health_check():
     except Exception as e:
         return jsonify({"status": "unhealthy", "error": str(e)})
 
+# Add this function to process queued gifs
+def process_gif_queue(queue_key, duration_ms):
+    while True:
+        try:
+            # Get but don't remove the first item in the queue
+            queued_item = redis_client.lindex(queue_key, 0)
+            if queued_item:
+                # Process the gif
+                gif_data = json.loads(queued_item)
+                socketio.emit(gif_data['event'], {'show': True})
+                
+                # Wait for gif duration
+                eventlet.sleep(duration_ms / 1000.0)
+                
+                # Remove the processed item
+                redis_client.lpop(queue_key)
+                
+                # Emit hide event
+                socketio.emit(gif_data['event'], {'show': False})
+                
+                # Small delay between gifs
+                eventlet.sleep(0.5)
+            else:
+                eventlet.sleep(0.1)
+        except Exception as e:
+            print(f"Error processing gif queue: {str(e)}")
+            eventlet.sleep(1)
+
+# Modify the handle_bits function
 @app.route('/bits', methods=['POST'])
 def handle_bits():
     try:
         data = request.json
         print(f"[DEBUG] Bits endpoint hit with data: {data}")
         
-        # Only process events from current_user to prevent doubles
         if data.get('initiator') != 'current_user':
             return jsonify({"status": "skipped", "reason": "non-primary initiator"})
             
@@ -47,12 +84,21 @@ def handle_bits():
         if bits_used == 50:
             print(f"[DEBUG] Processing 50 bits for user: {user}")
             send_command('dropbear', {'user': user})
-            socketio.emit('show_dropbear_gif', {'show': True})
+            # Add to dropbear queue
+            redis_client.rpush(QUEUE_KEY_DROPBEAR, json.dumps({
+                'event': 'show_dropbear_gif',
+                'user': user,
+                'timestamp': time.time()
+            }))
             return jsonify({"status": "success"})
             
         elif bits_used == 1:
-            socketio.emit('show_fire_gif', {'show': True})
-            print("[DEBUG] Emitted fire gif event")
+            # Add to fire queue
+            redis_client.rpush(QUEUE_KEY_FIRE, json.dumps({
+                'event': 'show_fire_gif',
+                'timestamp': time.time()
+            }))
+            print("[DEBUG] Added fire gif to queue")
             return jsonify({"status": "success"})
             
         return jsonify({"status": "error", "message": "Invalid bits amount"}), 400
@@ -69,9 +115,15 @@ def handle_connect():
 def handle_disconnect():
     print("[DEBUG] Client disconnected from WebSocket")
 
+# Add this before the if __name__ == "__main__": block
+def start_queue_processors():
+    eventlet.spawn(process_gif_queue, QUEUE_KEY_DROPBEAR, GIF_DURATION_DROPBEAR)
+    eventlet.spawn(process_gif_queue, QUEUE_KEY_FIRE, GIF_DURATION_FIRE)
 
+# Modify the main block to start queue processors
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
+    start_queue_processors()
     socketio.run(app, 
                 host="0.0.0.0", 
                 port=port,
