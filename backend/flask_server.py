@@ -43,39 +43,38 @@ def health_check():
 def process_gif_queue(queue_key, duration_ms):
     while True:
         try:
-            # Get but don't remove the first item in the queue
             queued_item = redis_client.lindex(queue_key, 0)
             if queued_item:
                 gif_data = json.loads(queued_item)
                 
-                # Add timestamp check to prevent processing old items
-                if time.time() - gif_data['timestamp'] > 300:  # 5 minutes timeout
-                    redis_client.lpop(queue_key)
-                    continue
+                # Add debug logging
+                print(f"[DEBUG] Processing gif: {gif_data['event']}")
                 
-                # Emit event with retry logic
-                retry_count = 0
-                while retry_count < 3:
-                    try:
-                        socketio.emit(gif_data['event'], {'show': True})
-                        break
-                    except Exception as e:
-                        print(f"[ERROR] Emit retry {retry_count}: {str(e)}")
-                        retry_count += 1
-                        eventlet.sleep(0.5)
+                # Force sync emit to ensure delivery
+                socketio.emit(gif_data['event'], {'show': True}, namespace='/')
                 
+                # Wait for gif duration
                 eventlet.sleep(duration_ms / 1000.0)
+                
+                # Remove from queue and hide
                 redis_client.lpop(queue_key)
-                socketio.emit(gif_data['event'], {'show': False})
+                socketio.emit(gif_data['event'], {'show': False}, namespace='/')
+                
+                print(f"[DEBUG] Completed gif: {gif_data['event']}")
             
             eventlet.sleep(0.1)
             
         except Exception as e:
             print(f"[ERROR] Queue processor error: {str(e)}")
             eventlet.sleep(1)
-
-# Modify the handle_bits function@app.route('/bits', methods=['POST'])
+@app.route('/bits', methods=['POST', 'OPTIONS'])
 def handle_bits():
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        return response
+
     try:
         data = request.json
         print(f"[DEBUG] Bits endpoint hit with data: {data}")
@@ -112,7 +111,6 @@ def handle_bits():
     except Exception as e:
         print(f"[ERROR] Exception in bits handler: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
-
 @socketio.on('connect')
 def handle_connect():
     print("[DEBUG] Client connected to WebSocket")
