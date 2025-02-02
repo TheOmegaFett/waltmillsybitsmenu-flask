@@ -40,18 +40,34 @@ def handle_bits():
         bits_used = int(product.get("cost", {}).get("amount", 0))
         
         if bits_used == 50:
-            # Use eventlet.spawn to handle the Redis publish in a non-blocking way
-            eventlet.spawn(send_command, 'dropbear', {'user': user})
+            # Handle both command and WebSocket event together
+            def command_wrapper():
+                send_command('dropbear', {'user': user})
+                socketio.emit('show_dropbear_gif', {'show': True})
+                print(f"[DEBUG] Emitted dropbear events for user: {user}")
+            
+            eventlet.spawn(command_wrapper)
             return jsonify({"status": "success"})
             
         elif bits_used == 1:
             socketio.emit('show_fire_gif', {'show': True})
+            print("[DEBUG] Emitted fire gif event")
             return jsonify({"status": "success"})
             
         return jsonify({"status": "error", "message": "Invalid bits amount"}), 400
         
     except Exception as e:
+        print(f"[ERROR] Exception in bits handler: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@socketio.on('connect')
+def handle_connect():
+    print("[DEBUG] Client connected to WebSocket")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print("[DEBUG] Client disconnected from WebSocket")
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
@@ -60,3 +76,4 @@ if __name__ == "__main__":
                 port=port,
                 log_output=True,
                 use_reloader=False)  # Disable reloader in production
+
