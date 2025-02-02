@@ -48,6 +48,7 @@
       let isPlaying = false;
 
       socket.on("show_fire_gif", (data) => {
+        console.log("Received fire gif event:", data); // Add this line
         if (isPlaying) return;
         isPlaying = true;
         status.textContent = "Fire GIF triggered!";
@@ -66,7 +67,6 @@
           isPlaying = false;
         }, 5000);
       });
-
       socket.on("show_dropbear_gif", (data) => {
         if (isPlaying) return;
         isPlaying = true;
@@ -92,6 +92,14 @@
           container.removeChild(container.firstChild);
         }
       }
+
+      socket.on("connect", () => {
+        console.log("WebSocket connected");
+      });
+
+      socket.on("connect_error", (error) => {
+        console.log("WebSocket connection error:", error);
+      });
     </script>
   </body>
 </html>
