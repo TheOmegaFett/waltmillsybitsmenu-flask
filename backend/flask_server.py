@@ -35,13 +35,17 @@ def handle_bits():
     try:
         data = request.json
         print(f"[DEBUG] Bits endpoint hit with data: {data}")
+        
+        # Only process events from current_user to prevent doubles
+        if data.get('initiator') != 'current_user':
+            return jsonify({"status": "skipped", "reason": "non-primary initiator"})
+            
         user = data.get("displayName")
         product = data.get("product", {})
         bits_used = int(product.get("cost", {}).get("amount", 0))
         
         if bits_used == 50:
-            print(f"[DEBUG] Processing 50 bits for user: {user}")  # Track 50 bits processing
-            # Only send the command, let the command handler manage the socket emit
+            print(f"[DEBUG] Processing 50 bits for user: {user}")
             send_command('dropbear', {'user': user})
             socketio.emit('show_dropbear_gif', {'show': True})
             return jsonify({"status": "success"})
