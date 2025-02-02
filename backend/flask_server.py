@@ -46,29 +46,35 @@ def process_gif_queue(queue_key, duration_ms):
             # Get but don't remove the first item in the queue
             queued_item = redis_client.lindex(queue_key, 0)
             if queued_item:
-                # Process the gif
                 gif_data = json.loads(queued_item)
-                socketio.emit(gif_data['event'], {'show': True})
                 
-                # Wait for gif duration
+                # Add timestamp check to prevent processing old items
+                if time.time() - gif_data['timestamp'] > 300:  # 5 minutes timeout
+                    redis_client.lpop(queue_key)
+                    continue
+                
+                # Emit event with retry logic
+                retry_count = 0
+                while retry_count < 3:
+                    try:
+                        socketio.emit(gif_data['event'], {'show': True})
+                        break
+                    except Exception as e:
+                        print(f"[ERROR] Emit retry {retry_count}: {str(e)}")
+                        retry_count += 1
+                        eventlet.sleep(0.5)
+                
                 eventlet.sleep(duration_ms / 1000.0)
-                
-                # Remove the processed item
                 redis_client.lpop(queue_key)
-                
-                # Emit hide event
                 socketio.emit(gif_data['event'], {'show': False})
-                
-                # Small delay between gifs
-                eventlet.sleep(0.5)
-            else:
-                eventlet.sleep(0.1)
+            
+            eventlet.sleep(0.1)
+            
         except Exception as e:
-            print(f"Error processing gif queue: {str(e)}")
+            print(f"[ERROR] Queue processor error: {str(e)}")
             eventlet.sleep(1)
 
-# Modify the handle_bits function
-@app.route('/bits', methods=['POST'])
+# Modify the handle_bits function@app.route('/bits', methods=['POST'])
 def handle_bits():
     try:
         data = request.json
@@ -110,11 +116,31 @@ def handle_bits():
 @socketio.on('connect')
 def handle_connect():
     print("[DEBUG] Client connected to WebSocket")
+    # Immediately check and process any pending items in queues
+    eventlet.spawn(check_pending_queues)
+
+def check_pending_queues():
+    try:
+        # Check both queues for pending items
+        dropbear_pending = redis_client.llen(QUEUE_KEY_DROPBEAR)
+        fire_pending = redis_client.llen(QUEUE_KEY_FIRE)
+        print(f"[DEBUG] Pending items - Dropbear: {dropbear_pending}, Fire: {fire_pending}")
+        
+        # If there are pending items, ensure queue processors are running
+        if dropbear_pending > 0 or fire_pending > 0:
+            start_queue_processors()
+    except Exception as e:
+        print(f"[ERROR] Queue check failed: {str(e)}")
 
 @socketio.on('disconnect')
 def handle_disconnect():
     print("[DEBUG] Client disconnected from WebSocket")
 
+@socketio.on('error')
+def handle_error(error):
+    print(f"[ERROR] WebSocket error: {error}")
+    # Attempt to reconnect or recover
+    eventlet.spawn(check_pending_queues)
 # Add this before the if __name__ == "__main__": block
 def start_queue_processors():
     eventlet.spawn(process_gif_queue, QUEUE_KEY_DROPBEAR, GIF_DURATION_DROPBEAR)
